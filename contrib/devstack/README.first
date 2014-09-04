@@ -1,0 +1,9 @@
+contrib/devstack/ directory contains the files necessary to integrate Granite driver with devstack.
+
+To install:
+
+git clone https://github.com/zulcss/granite /opt/stack/granite
+git clone https://github.com/openstack-dev/devstack /opt/stack/devstack
+
+cd /opt/stack/granite
+contrib/devstack/prepare-devstack.sh
