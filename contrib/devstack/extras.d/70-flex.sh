@@ -1,6 +1,6 @@
-# granite.sh - Devstack extras script to install native lxc
+# flex.sh - Devstack extras script to install native lxc
 
-if [[ $VIRT_DRIVER == "granite" ]]; then
+if [[ $VIRT_DRIVER == "flex" ]]; then
 	if [[ $1 == "source" ]]; then
        # Keep track of the current directory
        SCRIPT_DIR=$(cd $(dirname "$0") && pwd)
@@ -17,10 +17,10 @@ if [[ $VIRT_DRIVER == "granite" ]]; then
        FILES=$TOP_DIR/files
 
        # Get our defaults
-       source $TOP_DIR/lib/nova_plugins/hypervisor-granite
-	   source $TOP_DIR/lib/granite
+       source $TOP_DIR/lib/nova_plugins/hypervisor-flex
+	   source $TOP_DIR/lib/flex
 	   elif [[ $2 == "install" ]] ; then
-		  echo_summary "Configuring granite"
+		  echo_summary "Configuring flex"
 		  if is_ubuntu; then
               install_package python-software-properties
               sudo apt-add-repository -y ppa:ubuntu-lxc/daily
@@ -38,6 +38,6 @@ if [[ $VIRT_DRIVER == "granite" ]]; then
 			  echo "ubuntu veth br-int 2" | sudo tee -a /etc/lxc/lxc-usernet
 
 		  fi
-		  install_granite
+		  install_flex
 	fi
 fi
