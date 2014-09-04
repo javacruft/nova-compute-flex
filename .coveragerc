@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = granite
+omit = granite/tests/*,granite/openstack/*
+
+[report]
+ignore-errors = True
