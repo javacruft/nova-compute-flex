@@ -1,22 +1,22 @@
-# lib/granite
+# lib/flex
 
 # Dependencies:
 # ``functions`` file
 # ``DEST``, ``DATA_DIR``, ``STACK_USER`` must be defined
 
 # ``stack.sh`` calls the entry points in this order:
-# install_granite
+# install_flex
 
 XTRACE=$(set +o | grep xtrace)
 set +o xtrace
 
 
-GRANITE_DIR=$DEST/granite
+GRANITE_DIR=$DEST/nova-compute-flex
 
 LXC_REPO=${LXC_REPO:-${GIT_BASE}/lxc/python2-lxc}
 LXC_DIR=$DEST/python2-lxc
 
-function install_granite {
+function install_flex {
 	git_clone $LXC_REPO $LXC_DIR
 	setup_develop $LXC_DIR
 
