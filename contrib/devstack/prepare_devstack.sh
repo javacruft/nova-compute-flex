@@ -7,9 +7,9 @@ env
 NOVAGRANITEDIR=$(readlink -f $(dirname $0)/../..)
 INSTALLDIR=${INSTALLDIR:-/opt/stack}
 
-cp $NOVAGRANITEDIR/contrib/devstack/extras.d/70-granite.sh $INSTALLDIR/devstack/extras.d
-cp $NOVAGRANITEDIR/contrib/devstack/lib/nova_plugins/hypervisor-granite $INSTALLDIR/devstack/lib/nova_plugins/
-cp $NOVAGRANITEDIR/contrib/devstack/lib/granite $INSTALLDIR/devstack/lib/granite
+cp $NOVAGRANITEDIR/contrib/devstack/extras.d/70-flex.sh $INSTALLDIR/devstack/extras.d
+cp $NOVAGRANITEDIR/contrib/devstack/lib/nova_plugins/hypervisor-flex $INSTALLDIR/devstack/lib/nova_plugins/
+cp $NOVAGRANITEDIR/contrib/devstack/lib/flex $INSTALLDIR/devstack/lib/flex
 cat - <<-EOF >> $INSTALLDIR/devstack/localrc
-VIRT_DRIVER=granite
+VIRT_DRIVER=flex
 EOF
