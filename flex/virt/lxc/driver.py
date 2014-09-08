@@ -72,7 +72,7 @@ class LXCDriver(driver.ComputeDriver):
     def unrescue(self, instance, network_info):
         pass
 
-    def power_off(self, instance):
+    def power_off(self, instance, timeout=0, retry_interval=0):
         self.containers.stop_container(instance)
 
     def power_on(self, context, instance, network_info, block_device_info):
