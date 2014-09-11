@@ -89,7 +89,6 @@ class Containers(object):
 
         lxc_type = container_utils.get_lxc_security_info(flavor)
 
-
         # Create the LXC container from the image
         image.create_container(context, instance, image_meta,
                                container_image, self.idmap)
@@ -105,8 +104,16 @@ class Containers(object):
 
         # Startint the container
         if not container.running:
-            if container.start():
-                LOG.info(_('Container started'))
+            if lxc_type == 'unprivileged':
+                if container.start():
+                    LOG.info(_('Container started'))
+            elif lxc_type == 'privileged':
+                try:
+                    utils.execute('lxc-start', '-n', instance['uuid'],
+                                  '-P', CONF.instance_dir,
+                                  run_as_root=True)
+                except OSError as exc:
+                    LOG.warn(_("Containre failed to start"))
 
     def destroy_container(self, context, instance, network_info,
                           block_device_info, destroy_disks):

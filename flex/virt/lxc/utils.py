@@ -60,8 +60,8 @@ def get_lxc_security_info(flavor):
                                             'privileged')
         if lxc_status == 'privileged':
             # by default we run unprivileged containers
-            return True
-    return False
+            return 'privileged'
+    return 'unprivileged'
 
 class LXCIdMap(object):
     def __init__(self, ustart, unum, gstart, gnum):

@@ -23,7 +23,8 @@ from nova.openstack.common.gettextutils import _ # noqa
 from nova.openstack.common import importutils
 from nova.openstack.common import log as logging
 from nova import exception
-from nova.compute import flavors
+from nova import context as nova_context
+from nova import objects
 from nova import utils
 
 LOG = logging.getLogger(__name__)
@@ -38,6 +39,11 @@ class LXCConfig(object):
         self.image_meta = image_meta
         self.network_info = network_info
         self.idmap = idmap
+
+        self.flavor = objects.Flavor.get_by_id(
+            nova_context.get_admin_context(read_deleted='yes')
+            instance['instance_type_id'])
+        self.lxc_type = container_utils.get_lxc_security_info(self.flavor)
 
     def get_config(self):
         LOG.debug('Building LXC container configuration file')
@@ -112,5 +118,6 @@ class LXCConfig(object):
         self.container.append_config_item('lxc.cgroup.memory.limit.in_bytes', '%sM' % flavor['memory_mb'])
 
     def config_lxc_user(self):
-        for ent in self.idmap.lxc_conf_lines():
-            self.container.append_config_item(*ent)
+        if self.lxc_type = 'unprivileged':
+            for ent in self.idmap.lxc_conf_lines():
+                self.container.append_config_item(*ent)
