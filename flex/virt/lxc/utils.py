@@ -57,7 +57,7 @@ def get_disk_format(image_meta):
 def get_lxc_security_info(flavor):
     if flavor:
         lxc_status = flavor.extra_specs.get('lxc_containers_type',
-                                            'privileged')
+                                            'unprivileged')
         if lxc_status == 'privileged':
             # by default we run unprivileged containers
             return 'privileged'
