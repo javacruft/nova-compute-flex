@@ -19,6 +19,7 @@ import lxc
 from oslo.config import cfg
 
 from flex.virt.lxc import config
+from flex.virt.lxc import images
 from flex.virt.lxc import utils as container_utils
 from flex.virt.lxc import volumes
 
@@ -43,9 +44,6 @@ lxc_opts = [
     cfg.StrOpt('vif_driver',
                default='flex.virt.lxc.vifs.LXCGenericDriver',
                help='Default vif driver'),
-    cfg.StrOpt('image_driver',
-                default='flex.virt.lxc.images.localfs.FlexLocalFs',
-                help='Default image driver'),
     cfg.IntOpt('num_iscsi_scan_tries',
                default=5,
                help='Number of times to rescan iSCSI target to find volume'),
@@ -64,7 +62,6 @@ class Containers(object):
 
         vif_class = importutils.import_class(CONF.lxc.vif_driver)
         self.vif_driver = vif_class()
-        self.image = importutils.import_object(CONF.lxc.image_driver)
         self.volumes = volumes.VolumeOps()
         self.idmap = container_utils.LXCUserIdMap()
 
@@ -83,8 +80,8 @@ class Containers(object):
         container.set_config_path(CONF.instances_path)
 
         # Create the LXC container from the image
-        self.image.create_container(context, instance, image_meta,
-                                    container_image, self.idmap)
+        image.create_container(context, instance, image_meta,
+                               container_image, self.idmap)
 
         # Write the LXC confgiuration file
         cfg = config.LXCConfig(container, instance, image_meta, network_info,

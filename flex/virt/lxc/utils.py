@@ -80,6 +80,9 @@ class LXCIdMap(object):
         return (('lxc.id_map', 'u 0 %s %s' % (self.ustart, self.unum)),
                 ('lxc.id_map', 'g 0 %s %s' % (self.gstart, self.gnum)))
 
+    def get_user(self):
+        return (self.ustart, self.gstart)
+
 
 class LXCUserIdMap(LXCIdMap):
     def __init__(self, user=None, group=None, subuid_f="/etc/subuid",
