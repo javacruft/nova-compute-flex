@@ -59,7 +59,7 @@ def _fetch_image(context, instance, image_meta, container_image, idmap):
             utils.execute('tar', '--directory', image_dir,
                           '--anchored', '--numeric-owner', '-xpzf', base,
                           run_as_root=True)
-            utils.execute('chown', 'root:root' image_dir)
+            utils.execute('chown', 'root:root', image_dir)
 
 def _setup_container(instance, comtainer_image, idmap):
     container_rootfs = container_utils.get_container_rootfs(instance)
