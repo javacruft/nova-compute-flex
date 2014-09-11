@@ -27,6 +27,8 @@ from nova.openstack.common.gettextutils import _  # noqa
 from nova.openstack.common import importutils
 from nova.openstack.common import log as logging
 from nova.openstack.common import units
+from nova import context as nova_context
+from nova import objects
 from nova import utils
 
 MAX_CONSOLE_BYTES = 100 * units.Ki
@@ -78,6 +80,15 @@ class Containers(object):
         instance_name = instance['uuid']
         container = lxc.Container(instance_name)
         container.set_config_path(CONF.instances_path)
+
+        # Grab the flavor information to determine
+        # what kind of conatiner we are running
+        flavor = objects.Flavor.get_by_id(
+            nova_context.get_admin_context(read_deleted='yes'),
+            instance['instance_type_id'])
+
+        lxc_type = container_utils.get_lxc_security_info(flavor)
+
 
         # Create the LXC container from the image
         image.create_container(context, instance, image_meta,

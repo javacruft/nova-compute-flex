@@ -54,6 +54,14 @@ def get_instance_path(instance):
 def get_disk_format(image_meta):
     return image_meta.get('disk_format')
 
+def get_lxc_security_info(flavor):
+    if flavor:
+        lxc_status = flavor.extra_specs.get('lxc_containers_type',
+                                            'privileged')
+        if lxc_status == 'privileged':
+            # by default we run unprivileged containers
+            return True
+    return False
 
 class LXCIdMap(object):
     def __init__(self, ustart, unum, gstart, gnum):
