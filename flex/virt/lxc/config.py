@@ -114,8 +114,9 @@ class LXCConfig(object):
                     container_utils.get_container_console(self.instance))
 
     def config_lxc_limits(self):
-        flavor = flavors.extract_flavor(self.instance)
-        self.container.append_config_item('lxc.cgroup.memory.limit.in_bytes', '%sM' % flavor['memory_mb'])
+        return
+        #flavor = flavors.extract_flavor(self.instance)
+        #self.container.append_config_item('lxc.cgroup.memory.limit.in_bytes', '%sM' % flavor['memory_mb'])
 
     def config_lxc_user(self):
         if self.lxc_type == 'unprivileged':
