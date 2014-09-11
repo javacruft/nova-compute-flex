@@ -105,12 +105,12 @@ class Containers(object):
         # Startint the container
         if not container.running:
             if lxc_type == 'privileged':
-                LOG.info(_('Starting unprivileged container'))
+                LOG.info(_('Starting privileged container'))
                 if container.start():
                     LOG.info(_('Container started'))
             elif lxc_type == 'unprivileged':
                 try:
-                    LOG.info(_('Starting privileged container'))
+                    LOG.info(_('Starting unprivileged container'))
                     utils.execute('lxc-start', '-n', instance['uuid'],
                                   '-P', CONF.instances_dir,
                                   run_as_root=True)
