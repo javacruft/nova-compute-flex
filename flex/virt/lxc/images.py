@@ -16,14 +16,14 @@ CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 
-def create_container(context, instance, image_meta, container_image, idmap):
+def create_container(context, instance, image_meta, container_image, idmap, flavor):
     try:
-        _fetch_image(context, instance, image_meta, container_image, idmap)
+        _fetch_image(context, instance, image_meta, container_image, idmap, flavor)
         _setup_container(instance, container_image, idmap)
     except Exception as ex:
         LOG.error(_('Failed: %s') % ex)
 
-def _fetch_image(context, instance, image_meta, container_image, idmap):
+def _fetch_image(context, instance, image_meta, container_image, idmap, flavor):
     """Fetch the image from a glance image server."""
     LOG.debug("Downloading image from glance")
 
@@ -44,6 +44,7 @@ def _fetch_image(context, instance, image_meta, container_image, idmap):
         (user, group) = idmap.get_user()
         utils.execute('btrfs', 'sub', 'create', image_dir)
 
+        lxc_type = container_utils.get_lxc_security_info(flavor)
         if lxc_type == 'unprivileged':
             utils.execute('chown', '%s:%s' % (user, group), image_dir, run_as_root=True)
 

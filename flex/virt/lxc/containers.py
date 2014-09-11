@@ -91,7 +91,7 @@ class Containers(object):
 
         # Create the LXC container from the image
         images.create_container(context, instance, image_meta,
-                               container_image, self.idmap)
+                               container_image, self.idmap, flavor)
 
         # Write the LXC confgiuration file
         cfg = config.LXCConfig(container, instance, image_meta, network_info,
