@@ -90,7 +90,7 @@ class Containers(object):
         lxc_type = container_utils.get_lxc_security_info(flavor)
 
         # Create the LXC container from the image
-        image.create_container(context, instance, image_meta,
+        images.create_container(context, instance, image_meta,
                                container_image, self.idmap)
 
         # Write the LXC confgiuration file
