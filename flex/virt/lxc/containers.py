@@ -87,7 +87,7 @@ class Containers(object):
             nova_context.get_admin_context(read_deleted='yes'),
             instance['instance_type_id'])
 
-        lxc_type = container_utils.get_lxc_security_info(flavor)
+        lxc_type = container_utils.get_lxc_security_info(instance)
 
         # Create the LXC container from the image
         images.create_container(context, instance, image_meta,

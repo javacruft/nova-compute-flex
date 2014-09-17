@@ -22,6 +22,8 @@ from oslo.config import cfg
 
 from nova.openstack.common.gettextutils import _  # noqa
 from nova.openstack.common import log as logging
+from nova import context as nova_context
+from nova import objects
 
 LOG = logging.getLogger(__name__)
 
@@ -54,7 +56,11 @@ def get_instance_path(instance):
 def get_disk_format(image_meta):
     return image_meta.get('disk_format')
 
-def get_lxc_security_info(flavor):
+def get_lxc_security_info(instance):
+    flavor = objects.Flavor.get_by_id(
+        nova_context.get_admin_context(read_deleted='yes'),
+        instance['instance_type_id'])
+
     if flavor:
         lxc_status = flavor.extra_specs.get('lxc_containers_type',
                                             'unprivileged')

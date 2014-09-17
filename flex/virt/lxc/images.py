@@ -44,7 +44,7 @@ def _fetch_image(context, instance, image_meta, container_image, idmap, flavor):
         (user, group) = idmap.get_user()
         utils.execute('btrfs', 'sub', 'create', image_dir)
 
-        lxc_type = container_utils.get_lxc_security_info(flavor)
+        lxc_type = container_utils.get_lxc_security_info(instance)
         if lxc_type == 'unprivileged':
             utils.execute('chown', '%s:%s' % (user, group), image_dir, run_as_root=True)
 
