@@ -91,9 +91,10 @@ def _setup_container(instance, comtainer_image, idmap):
             utils.execute('touch', console_log)
 
         # setup the user quotas
-       # utils.execute('btrfs', 'quota', 'enable', container_rootfs,
-       #               run_as_root=True)
-       # utils.execute('btrfs', 'quota', 'rescan', container_rootfs,
-       #               run_as_root=True)
-       # utils.execute('btrfs', 'qgroup', 'limit', '%sG' % flavor.root_gb, container_roofs,
-        #              run_as_root=True)
+        size = instance['root_gb']
+        utils.execute('btrfs', 'quota', 'enable', container_rootfs,
+                      run_as_root=True)
+        utils.execute('btrfs', 'quota', 'rescan', container_rootfs,
+                      run_as_root=True)
+        utils.execute('btrfs', 'qgroup', 'limit', '%sG' % size, container_rootfs,
+                      run_as_root=True)
