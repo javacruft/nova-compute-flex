@@ -1,0 +1,6 @@
+# nova-rootwrap filters for compute nodes running flex
+# This file should be owned by (and only-writable by) the root user
+
+[filters]
+# flex/virt/lxc/containers.py:
+btrfs: CommandFilter, btrfs, root
