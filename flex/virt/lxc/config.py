@@ -41,7 +41,7 @@ class LXCConfig(object):
         self.idmap = idmap
 
         self.flavor = objects.Flavor.get_by_id(
-            nova_context.get_admin_context(read_deleted='yes')
+            nova_context.get_admin_context(read_deleted='yes'),
             instance['instance_type_id'])
         self.lxc_type = container_utils.get_lxc_security_info(self.flavor)
 
