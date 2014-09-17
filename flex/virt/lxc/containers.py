@@ -112,7 +112,7 @@ class Containers(object):
                 try:
                     LOG.info(_('Starting privileged container'))
                     utils.execute('lxc-start', '-n', instance['uuid'],
-                                  '-P', CONF.instances_dir,
+                                  '-P', CONF.instances_path,
                                   run_as_root=True)
                 except OSError as exc:
                     LOG.warn(_("Containre failed to start"))
