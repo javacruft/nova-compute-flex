@@ -48,14 +48,10 @@ def _fetch_image(context, instance, image_meta, container_image, idmap, flavor):
         if lxc_type == 'unprivileged':
             utils.execute('chown', '%s:%s' % (user, group), image_dir, run_as_root=True)
 
-            tar = ['tar', '--directory', image_dir,
-                   '--anchored', '--numeric-owner', '-xpzf', base]
-            nsexec = (['lxc-usernsexec'] + idmap.usernsexec_margs(with_read="user") +
-                      ['--'])
-            
-            args = tuple(nsexec + tar)
-            utils.execute(*args, check_exit_code=[0,2])
-            utils.execute(*tuple(nsexec + ['chown', '0:0', image_dir]))
+            utils.execute('lxc', idmap.usernsexec_margs(with_read="user"), '--',
+                           'tar', '--directory', image_dir,
+                          ' --anchored', '--numeric-owner', '-xpzf', base
+                          check_exit_code=[0,2])
         else:
             utils.execute('tar', '--directory', image_dir,
                           '--anchored', '--numeric-owner', '-xpzf', base,
