@@ -24,7 +24,7 @@ from nova.openstack.common import importutils
 from nova.openstack.common import log as logging
 from nova import exception
 from nova import context as nova_context
-from nova import objects
+from nova.objects import flavor as flavor_obj
 from nova import utils
 
 LOG = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class LXCConfig(object):
         self.network_info = network_info
         self.idmap = idmap
 
-        self.flavor = objects.Flavor.get_by_id(
+        self.flavor = flavor_obj.Flavor.get_by_id(
             nova_context.get_admin_context(read_deleted='yes'),
             instance['instance_type_id'])
         self.lxc_type = container_utils.get_lxc_security_info(self.instance)
