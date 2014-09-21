@@ -28,7 +28,7 @@ from nova.openstack.common import importutils
 from nova.openstack.common import log as logging
 from nova.openstack.common import units
 from nova import context as nova_context
-from nova import objects
+from nova.objects import flavor as flavor_obj
 from nova import utils
 
 MAX_CONSOLE_BYTES = 100 * units.Ki
@@ -83,7 +83,7 @@ class Containers(object):
 
         # Grab the flavor information to determine
         # what kind of conatiner we are running
-        flavor = objects.Flavor.get_by_id(
+        flavor = flavor_obj.Flavor.get_by_id(
             nova_context.get_admin_context(read_deleted='yes'),
             instance['instance_type_id'])
 
