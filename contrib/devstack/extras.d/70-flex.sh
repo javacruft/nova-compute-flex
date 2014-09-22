@@ -28,14 +28,12 @@ if [[ $VIRT_DRIVER == "flex" ]]; then
 			  install_package --force-yes lxc lxc-dev
               sudo sed -i 's/USE_LXC_BRIDGE.*$/USE_LXC_BRIDGE="false"/' \
 				 /etc/default/lxc-net
-              mkdir -p ~/.config/lxc
-			  echo "lxc.id_map = u 0 100000 65536" > ~/.config/lxc/default.conf
-		      echo "lxc.id_map = g 0 100000 65536" >> ~/.config/lxc/default.conf
-			  echo "lxc.network.type = veth" >> ~/.config/lxc/default.conf
-			  echo "lxc.network.link = lxcbr0" >> ~/.config/lxc/default.conf
-			  echo "ubuntu veth lxcbr0 2" | sudo tee -a /etc/lxc/lxc-usernet
-			  echo "ubuntu veth br100 2" | sudo tee -a /etc/lxc/lxc-usernet
-			  echo "ubuntu veth br-int 2" | sudo tee -a /etc/lxc/lxc-usernet
+			  # work around for https://github.com/lxc/lxc/issues/252
+              if [ -x /etc/init/systemd-logind.conf ]; then
+				 sudo service systemd-logind.conf restart
+			  fi
+			  echo "ubuntu veth br100 1000" | sudo tee -a /etc/lxc/lxc-usernet
+			  echo "ubuntu veth br-int 1000" | sudo tee -a /etc/lxc/lxc-usernet
 
 		  fi
 		  install_flex
