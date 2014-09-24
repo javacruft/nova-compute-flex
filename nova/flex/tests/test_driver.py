@@ -3,9 +3,9 @@ import mox
 
 from oslo.config import cfg
 
-from granite.virt.lxc import containers
-from granite.virt.lxc import driver as lxc_connection
-from granite.virt.lxc import images
+from nova.flex.virt.lxc import containers
+from nova.flex.virt.lxc import driver as lxc_connection
+from nova.flex.virt.lxc import images
 from nova.compute import flavors
 from nova.compute import power_state
 from nova import context

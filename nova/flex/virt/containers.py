@@ -18,10 +18,10 @@ import lxc
 
 from oslo.config import cfg
 
-from flex.virt.lxc import config
-from flex.virt.lxc import images
-from flex.virt.lxc import utils as container_utils
-from flex.virt.lxc import volumes
+from nova.flex.virt import config
+from nova.flex.virt import images
+from nova.flex.virt import utils as container_utils
+from nova.flex.virt import volumes
 
 from nova.openstack.common.gettextutils import _  # noqa
 from nova.openstack.common import importutils
@@ -44,7 +44,7 @@ lxc_opts = [
                default='/usr/share/lxc/config',
                help='Default lxc config dir'),
     cfg.StrOpt('vif_driver',
-               default='flex.virt.lxc.vifs.LXCGenericDriver',
+               default='nova.flex.virt.vifs.LXCGenericDriver',
                help='Default vif driver'),
     cfg.IntOpt('num_iscsi_scan_tries',
                default=5,

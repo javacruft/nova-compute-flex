@@ -23,8 +23,8 @@ native-lxc driver
 import lxc
 from oslo.config import cfg
 
-from flex.virt.lxc import containers
-from flex.virt.lxc import hostops
+from nova.flex.virt import containers
+from nova.flex.virt import hostops
 
 from nova.compute import power_state
 from nova.openstack.common import log as logging

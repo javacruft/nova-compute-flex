@@ -4,9 +4,9 @@ Installation
 
 At the command line::
 
-    $ pip install granite
+    $ pip install nova-compute-flex
 
 Or, if you have virtualenvwrapper installed::
 
-    $ mkvirtualenv granite
-    $ pip install granite
+    $ mkvirtualenv nova-compute-flex
+    $ pip install nova-compute-flex

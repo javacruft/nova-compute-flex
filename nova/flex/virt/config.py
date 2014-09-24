@@ -16,7 +16,7 @@ import os
 
 from oslo.config import cfg
 
-from flex.virt.lxc import utils as container_utils
+from nova.flex.virt import utils as container_utils
 
 from nova.openstack.common import fileutils
 from nova.openstack.common.gettextutils import _ # noqa

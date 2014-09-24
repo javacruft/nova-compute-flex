@@ -18,7 +18,7 @@ from oslo.config import cfg
 
 import lxc
 
-from flex.virt.lxc import host_utils as host_utils
+from nova.flex.virt import host_utils as host_utils
 from nova.openstack.common.gettextutils import _   # noqa
 from nova.openstack.common import jsonutils
 from nova.openstack.common import log as logging

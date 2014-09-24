@@ -2,8 +2,8 @@ contrib/devstack/ directory contains the files necessary to integrate Granite dr
 
 To install:
 
-git clone https://github.com/zulcss/granite /opt/stack/granite
+git clone https://github.com/zulcss/nova-compute-flex /opt/stack/nova-compute-flex
 git clone https://github.com/openstack-dev/devstack /opt/stack/devstack
 
-cd /opt/stack/granite
+cd /opt/stack/nova-compute-flex
 contrib/devstack/prepare-devstack.sh

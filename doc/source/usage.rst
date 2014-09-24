@@ -2,6 +2,6 @@
 Usage
 ========
 
-To use granite in a project::
+To use nova-compute-flex in a project::
 
-	import granite
+	import nova-compute-flex
