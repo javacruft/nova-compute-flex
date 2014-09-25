@@ -53,7 +53,7 @@ class LXCGenericDriver(object):
             raise exception.NovaException(
                 _("Unexpected vif_type=%s") % vif_type)
     
-    def get_veth_path_names(self, vif):
+    def get_veth_path_names(self, iface_id):
         return (("qvb%s" % iface_id)[:network_model.NIC_NAME_LEN],
                 ("qvo%s" % iface_id)[:network_model.NIC_NAME_LEN])
 
@@ -83,10 +83,6 @@ class LXCGenericDriver(object):
 
     def get_ovs_interfaceid(self, vif):
         return vif.get('ovs_interfaceid') or vif['id']
-
-    def get_veth_pair_name(self, iface_id):
-        return (("qvb%s" % iface_id)[:network_model.NIC_NAME_LEN],
-                ("qvo%s" % iface_id)[:network_model.NIC_NAME_LEN])
 
     def get_br_name(self, iface_id):
         return ("qbr" + iface_id)[:network_model.NIC_NAME_LEN]
