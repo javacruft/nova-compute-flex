@@ -13,7 +13,6 @@
 #    under the License.
 
 import os
-
 import lxc
 
 from oslo.config import cfg
@@ -66,6 +65,11 @@ class Containers(object):
         self.vif_driver = vif_class()
         self.volumes = volumes.VolumeOps()
         self.idmap = container_utils.LXCUserIdMap()
+
+    def init_contianer(self):
+        if not lxc.version:
+            raise Exception('LXC is not installed')
+        utils.execute('cgm', 'movepidabs', 'all', '/nova', os.getpid())
 
     def spawn(self, context, instance, image_meta, injected_files,
               admin_password, network_info, block_device_info=None):

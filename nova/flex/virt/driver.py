@@ -45,8 +45,7 @@ class LXCDriver(driver.ComputeDriver):
         self.hostops = hostops.HostOps()
 
     def init_host(self, host):
-        if not lxc.version:
-            raise Exception('LXC is not installed')
+        self.containers.init_containers()
 
     def list_instances(self):
         return lxc.list_containers(config_path=CONF.instances_path)
