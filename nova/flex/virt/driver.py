@@ -45,7 +45,7 @@ class LXCDriver(driver.ComputeDriver):
         self.hostops = hostops.HostOps()
 
     def init_host(self, host):
-        self.containers.init_containers()
+        self.containers.init_container()
 
     def list_instances(self):
         return lxc.list_containers(config_path=CONF.instances_path)

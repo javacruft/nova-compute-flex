@@ -13,6 +13,9 @@
 #    under the License.
 
 import os
+import pwd
+import uuid
+
 import lxc
 
 from oslo.config import cfg
@@ -66,10 +69,18 @@ class Containers(object):
         self.volumes = volumes.VolumeOps()
         self.idmap = container_utils.LXCUserIdMap()
 
-    def init_contianer(self):
+    def init_container(self):
         if not lxc.version:
             raise Exception('LXC is not installed')
-        utils.execute('cgm', 'movepidabs', 'all', '/nova', os.getpid())
+
+        lxc_cgroup = uuid.uuid4()
+        utils.execute('cgm', 'create', 'all', lxc_cgroup,
+                      run_as_root=True)
+        utils.execute('cgm', 'chown', 'all', lxc_cgroup,
+                      pwd.getpwuid(os.getuid()).pw_uid,
+                      pwd.getpwuid(os.getuid()).pw_gid,
+                      run_as_root=True)
+        utils.execute('cgm', 'movepid', 'all', lxc_cgroup, os.getpid())
 
     def spawn(self, context, instance, image_meta, injected_files,
               admin_password, network_info, block_device_info=None):
