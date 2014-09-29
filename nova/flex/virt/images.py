@@ -41,6 +41,7 @@ def _fetch_image(context, instance, image_meta, container_image, idmap, flavor):
             raise exeception.InvalidDiskFormat(
                 disk_format=container_utils.get_disk_format(image_meta))
         
+    if not os.path.exists(image_dir):
         (user, group) = idmap.get_user()
         utils.execute('btrfs', 'sub', 'create', image_dir)
 
