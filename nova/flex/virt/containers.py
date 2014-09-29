@@ -130,7 +130,7 @@ class Containers(object):
                                   '-P', CONF.instances_path,
                                   run_as_root=True)
                 except OSError as exc:
-                    LOG.warn(_("Containre failed to start"))
+                    LOG.warn(_("Container failed to start"))
 
     def destroy_container(self, context, instance, network_info,
                           block_device_info, destroy_disks):
