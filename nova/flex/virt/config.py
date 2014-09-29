@@ -115,6 +115,7 @@ class LXCConfig(object):
 
     def config_lxc_limits(self):
         self.container.append_config_item('lxc.cgroup.memory.limit_in_bytes','%sM' % self.flavor.memory_mb)
+        self.container.append_config_item('lxc.cgroup.lxc.cgroup.cpuset.cpus', '100')
 
     def config_lxc_user(self):
         if self.lxc_type == 'unprivileged':
