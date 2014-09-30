@@ -126,65 +126,106 @@ class Containers(object):
             elif lxc_type == 'privileged':
                 try:
                     LOG.info(_('Starting privileged container'))
-                    utils.execute('lxc-start', '-n', instance['uuid'],
+                    utils.execute('lxc-start', '-n', instance['uuid'], '-d',
                                   '-P', CONF.instances_path,
                                   run_as_root=True)
+                    if container.start():
+                        LOG.info(_('Container started'))
                 except OSError as exc:
                     LOG.warn(_("Container failed to start"))
 
     def destroy_container(self, context, instance, network_info,
                           block_device_info, destroy_disks):
         LOG.debug('Destroying container')
-        container = self.get_container_root(instance)
-        if container.running:
-            container.stop()
-        if container.defined:
-            # work around for segfaulting api call
-            utils.execute('lxc-destroy', '-n', instance['uuid'],
-                          '-P', CONF.instances_path)
+        (container, lxc_type) = self.get_container_root(instance)
+        if lxc_type == 'unprivileged':
+            if container.running:
+                container.stop()
+            if container.defined:
+                # work around for segfaulting api call
+                utils.execute('lxc-destroy', '-n', instance['uuid'],
+                              '-P', CONF.instances_path)
+        elif lxc_type == 'privileged':
+                utils.execute('lxc-destroy', '-f', '-n', instance['uuid'],
+                              '-P', CONF.instances_path,
+                              run_as_root=True)
+                
 
     def reboot_container(self, context, instance, network_info, reboot_type,
                          block_device_info, bad_volumes_callback):
         LOG.debug('Rebooting container')
-        container = self.get_container_root(instance)
-        if container.running:
-            if container.reboot():
-                LOG.info(_('Container rebooted'))
+        (container, lxc_type) = self.get_container_root(instance)
+        if lxc_type == 'unprivileged':
+            if container.running:
+                if container.reboot():
+                    LOG.info(_('Container rebooted'))
+        elif lxc_type == 'privileged':
+            utils.execute('lxc-stop', '-n', instance['uuid'],
+                          '-r', '-P', CONF.instances_path,
+                          run_as_root=True)
+            
 
     def stop_container(self, instance):
         LOG.debug('Stopping container')
-        container = self.get_container_root(instance)
-        if container.running:
-            if container.stop():
-                LOG.info(_('Container stopped'))
+        (container, lxc_type) = self.get_container_root(instance)
+        if lxc_type == 'unprivileged':
+            if container.running:
+                if container.stop():
+                    LOG.info(_('Container stopped'))
+        elif lxc_type == 'privileged':
+            utils.execute('lxc-stop', '-n', instance['uuid'],
+                          '-P', CONF.instances_path,
+                          run_as_root=True)
+
 
     def start_container(self, context, instance, network_info,
                         block_device_info):
         LOG.debug('Starting container')
-        container = self.get_container_root(instance)
-        if container.start():
-            LOG.info(_('Container started'))
+        (container, lxc_type) = self.get_container_root(instance)
+        if lxc_type == 'unprivileged':
+            if container.start():
+                LOG.info(_('Container started'))
+        elif lxc_type == 'privileged':
+            utils.execute('lxc-start', '-n', instance['uuid'],
+                          '-P', CONF.instances_path,
+                          run_as_root=True)
 
     def shutdown_container(self, instance, network_info, block_device_info):
         LOG.debug('Shutdown container')
-        container = self.get_container_root(instance)
+        (container, lxc_type) = self.get_container_root(instance)
         if container.running:
             for vif in network_info:
                 self.driver.unplug(instance, vif)
-            container.shutdown()
+            lxc_type = container_utils.lxc_security_info(instance)
+            if lxc_type == 'unprivileged':
+                container.shutdown()
+            elif lxc_type == 'privileged':
+                utils.execute('lxc-stop', '-n', instance['uuid'],
+                              '-P', CONF.instances_path,
+                              run_as_root=True)
 
     def suspend_container(self, instance):
         LOG.debug('Suspend container')
-        container = self.get_container_root(instance)
-        if container.defined and container.controllable:
-            container.freeze()
+        (container, lxc_type) = self.get_container_root(instance)
+        if lxc_type == 'unprivileged':
+            if container.defined and container.controllable:
+                container.freeze()
+        elif lxc_type == 'privileged':
+            utils.execute('lxc-freeze', '-n', instance['uuid'],
+                          '-P', CONF.instances_path,
+                          run_as_root=True)
 
     def resume_container(self, context, instance, network_info,
                          block_device_info):
         LOG.debug('Suspend container')
-        container = self.get_container_root(instance)
-        if container.defined and container.controllable:
-            container.unfreeze()
+        (container, lxc_type) = self.get_container_root(instance)
+        if lxc_type == 'unprivileged':
+            if container.defined and container.controllable:
+                container.unfreeze()
+        elif lxc_type == 'privileged':
+            utils.execute('lxc-unfreeze', '-n', instance['uuid'],
+                          '-P', CONF.instances_path,
+                          run_as_root=True)
 
     def get_container_console(self, instance):
         LOG.debug('Container console log')
@@ -233,18 +274,19 @@ class Containers(object):
         self.vif_driver.unplug(instance, network_info)
 
     def container_exists(self, instance):
-        container = self.get_container_root(instance)
+        (container, lxc_type) = self.get_container_root(instance)
         if container.running:
             return True
         else:
             return False
 
     def get_container_pid(self, instance):
-        container = self.get_container_root(instance)
+        (container, lxc_type) = self.get_container_root(instance)
         if container.running:
             return container.init_pid
 
     def get_container_root(self, instance):
+        lxc_type = container_utils.get_lxc_security_info(instance)
         container = lxc.Container(instance['uuid'])
         container.set_config_path(CONF.instances_path)
-        return container
+        return (container, lxc_type)

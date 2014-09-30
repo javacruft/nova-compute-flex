@@ -62,10 +62,10 @@ def get_lxc_security_info(instance):
         instance['instance_type_id'])
 
     if flavor:
-        lxc_status = flavor.extra_specs.get('lxc_containers_type',
-                                            'unprivileged')
-        if lxc_status == 'privileged':
-            # by default we run unprivileged containers
+        lxc_status = flavor.extra_specs.get('flex:flex_privileged')
+        if lxc_status is None:
+            return 'unprivileged'
+        elif lxc_status == 'true':
             return 'privileged'
     return 'unprivileged'
 

@@ -116,7 +116,7 @@ class LXCDriver(driver.ComputeDriver):
         elif state is False:
             pstate = power_state.SHUTDOWN
         else:
-            pstate = power_state.NOSTATE
+            pstate = power_state.RUNNING
         return {'state': pstate,
                 'max_mem': 0,
                 'mem': 0,
