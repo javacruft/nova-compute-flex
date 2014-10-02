@@ -53,39 +53,24 @@ class LXCGenericDriver(object):
             raise exception.NovaException(
                 _("Unexpected vif_type=%s") % vif_type)
     
-    def get_veth_pair_names(self, iface_id):
-        return (("qvb%s" % iface_id)[:network_model.NIC_NAME_LEN],
-                ("qvo%s" % iface_id)[:network_model.NIC_NAME_LEN])
-
     def plug_ovs(self, instance, vif):
-        iface_id = self.get_ovs_interfaceid(vif)
-        br_name = self.get_br_name(vif['id'])
-        v1_name, v2_name = self.get_veth_pair_names(vif['id'])
+        if_local_name = 'tap%s' % vif['id'][:11]
+        if_remote_name = 'ns%s' % vif['id'][:11]
 
-        if not linux_net.device_exists(br_name):
-            utils.execute('brctl', 'addbr', br_name, run_as_root=True)
-            utils.execute('brctl', 'setfd', br_name, 0, run_as_root=True)
-            utils.execute('brctl', 'stp', br_name, 'off', run_as_root=True)
-            utils.execute('tee',
-                          ('/sys/class/net/%s/bridge/multicast_snooping' %
-                          br_name),
-                          process_input='0',
-                          run_as_root=True,
-                          check_exit_code=[0, 1])
+        utils.execute('ip', 'link', 'add', 'name', if_local_name, 'type',
+                      'veth', 'peer', 'name', if_remote_name,
+                      run_as_root=True)
+        linux_net.create_ovs_vif_port(vif['network']['bridge'],
+                                      if_local_name,
+                                      self.get_ovs_interfaceid(vif),
+                                      vif['address'],
+                                      instance['uuid'])
 
-        if not linux_net.device_exists(v2_name):
-            linux_net._create_veth_pair(v1_name, v2_name)
-            utils.execute('ip', 'link', 'set', br_name, 'up', run_as_root=True)
-            utils.execute('brctl', 'addif', br_name, v1_name, run_as_root=True)
-            linux_net.create_ovs_vif_port(vif['network']['bridge'],
-                                          v2_name, iface_id, vif['address'],
-                                          instance['uuid'])
+        utils.execute('ip', 'link', 'set', if_local_name, 'up',
+                      run_as_root=True)
 
     def get_ovs_interfaceid(self, vif):
         return vif.get('ovs_interfaceid') or vif['id']
-
-    def get_br_name(self, iface_id):
-        return ("qbr" + iface_id)[:network_model.NIC_NAME_LEN]
 
     def plug_bridge(self, instance, vif):
         network = vif['network']

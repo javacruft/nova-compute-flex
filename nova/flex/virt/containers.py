@@ -24,6 +24,7 @@ from nova.flex.virt import config
 from nova.flex.virt import images
 from nova.flex.virt import utils as container_utils
 from nova.flex.virt import volumes
+from nova.flex.virt import network
 
 from nova.openstack.common.gettextutils import _  # noqa
 from nova.openstack.common import importutils
@@ -73,6 +74,7 @@ class Containers(object):
         if not lxc.version:
             raise Exception('LXC is not installed')
 
+	    # set up cgroups
         lxc_cgroup = uuid.uuid4()
         utils.execute('cgm', 'create', 'all', lxc_cgroup,
                       run_as_root=True)
@@ -81,6 +83,11 @@ class Containers(object):
                       pwd.getpwuid(os.getuid()).pw_gid,
                       run_as_root=True)
         utils.execute('cgm', 'movepid', 'all', lxc_cgroup, os.getpid())
+
+    	# setup network namespaces
+        if not os.path.exists('/var/run/ns'):
+            utils.execute('mkdir', '-p', '/var/run/ns',
+                          run_as_root=True)
 
     def spawn(self, context, instance, image_meta, injected_files,
               admin_password, network_info, block_device_info=None):
@@ -113,10 +120,6 @@ class Containers(object):
                                self.idmap)
         cfg.get_config()
 
-
-        for vif in network_info:
-            self.vif_driver.plug(instance, vif)
-
         # Startint the container
         if not container.running:
             if lxc_type == 'unprivileged':
@@ -133,6 +136,10 @@ class Containers(object):
                         LOG.info(_('Container started'))
                 except OSError as exc:
                     LOG.warn(_("Container failed to start"))
+
+            for vif in network_info:
+                self.vif_driver.plug(instance, vif)
+                self.container_attach_network(instance, vif, container)
 
     def destroy_container(self, context, instance, network_info,
                           block_device_info, destroy_disks):
@@ -272,6 +279,35 @@ class Containers(object):
 
     def teardown_network(self, instance, network_info):
         self.vif_driver.unplug(instance, network_info)
+
+    def container_attach_network(self, instance, vif, container):
+        if vif['type'] != 'ovs':
+            return
+        container_pid = self.get_container_pid(instance)
+        if not container_pid:
+            return
+        netns_path = os.path.join('/var/run/netns', instance['uuid'])
+        utils.execute(
+            'ln', '-sf', '/proc/{0}/ns/net'.format(container_pid),
+            '/var/run/netns/{0}'.format(instance['uuid']),
+            run_as_root=True)
+
+        if_remote_name = 'ns%s' % vif['id'][:11]
+        gateway = network.find_gateway(instance, vif['network'])
+        ip = network.find_fixed_ip(instance, vif['network'])
+
+        utils.execute('ip', 'link', 'set', if_remote_name, 'netns',
+                      instance['uuid'], run_as_root=True)
+        utils.execute('ip', 'netns', 'exec', instance['uuid'], 'ip', 'link',
+                       'set', if_remote_name, 'address', vif['address'],
+                       run_as_root=True)
+        utils.execute('ip', 'netns', 'exec', instance['uuid'], 'ifconfig',
+                       if_remote_name, ip, run_as_root=True)
+        utils.execute('ip', 'netns', 'exec', instance['uuid'],
+                      'ip', 'route', 'replace', 'default', 'via',
+                      gateway, 'dev', if_remote_name, run_as_root=True)
+
+
 
     def container_exists(self, instance):
         (container, lxc_type) = self.get_container_root(instance)

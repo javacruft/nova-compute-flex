@@ -102,12 +102,14 @@ class LXCConfig(object):
 
     def config_lxc_network(self):
         for vif in self.network_info:
+            vif_type = vif['type']
             bridge = vif['network']['bridge']
             mac = vif['address']
 
-        self.container.append_config_item('lxc.network.type', 'veth')
-        self.container.append_config_item('lxc.network.hwaddr', mac)
-        self.container.append_config_item('lxc.network.link', bridge)
+        if vif_type != 'ovs':
+            self.container.append_config_item('lxc.network.type', 'veth')
+            self.container.append_config_item('lxc.network.hwaddr', mac)
+            self.container.append_config_item('lxc.network.link', bridge)
 
     def config_lxc_console(self):
         self.container.append_config_item('lxc.console.logfile',
