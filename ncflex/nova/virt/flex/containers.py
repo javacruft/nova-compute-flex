@@ -47,7 +47,7 @@ lxc_opts = [
                default='/usr/share/lxc/config',
                help='Default lxc config dir'),
     cfg.StrOpt('vif_driver',
-               default='vifs.LXCGenericDriver',
+               default='ncflex.nova.virt.flex.vifs.LXCGenericDriver',
                help='Default vif driver'),
     cfg.IntOpt('num_iscsi_scan_tries',
                default=5,
