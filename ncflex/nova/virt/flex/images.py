@@ -3,7 +3,7 @@ import tarfile
 
 from oslo.config import cfg
 
-from nova.flex.virt import utils as container_utils
+from . import utils as container_utils
 from nova import exception
 from nova.compute import flavors
 from nova.openstack.common import fileutils
