@@ -106,7 +106,9 @@ class LXCConfig(object):
             bridge = vif['network']['bridge']
             mac = vif['address']
 
-        if vif_type != 'ovs':
+        if vif_type == 'ovs':
+            self.container.append_config_item('lxc.network.type', 'empty')
+        else:
             self.container.append_config_item('lxc.network.type', 'veth')
             self.container.append_config_item('lxc.network.hwaddr', mac)
             self.container.append_config_item('lxc.network.link', bridge)

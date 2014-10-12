@@ -281,8 +281,6 @@ class Containers(object):
         self.vif_driver.unplug(instance, network_info)
 
     def container_attach_network(self, instance, vif, container):
-        if vif['type'] != 'ovs':
-            return
         container_pid = self.get_container_pid(instance)
         if not container_pid:
             return
@@ -292,21 +290,15 @@ class Containers(object):
             '/var/run/netns/{0}'.format(instance['uuid']),
             run_as_root=True)
 
-        if_remote_name = 'ns%s' % vif['id'][:11]
-        gateway = network.find_gateway(instance, vif['network'])
-        ip = network.find_fixed_ip(instance, vif['network'])
-
-        utils.execute('ip', 'link', 'set', if_remote_name, 'netns',
-                      instance['uuid'], run_as_root=True)
-        utils.execute('ip', 'netns', 'exec', instance['uuid'], 'ip', 'link',
-                       'set', if_remote_name, 'address', vif['address'],
-                       run_as_root=True)
-        utils.execute('ip', 'netns', 'exec', instance['uuid'], 'ifconfig',
-                       if_remote_name, ip, run_as_root=True)
-        utils.execute('ip', 'netns', 'exec', instance['uuid'],
-                      'ip', 'route', 'replace', 'default', 'via',
-                      gateway, 'dev', if_remote_name, run_as_root=True)
-
+        if vif['type'] == 'ovs':
+            remote_name='ns%s' % vif['id'][:11]
+            utils.execute('ip', 'link', 'set', if_remote_name, 'netns',
+                          instance['uuid'], run_as_root=True)
+            utils.execute('ip', 'netns', 'exec', instance['uuid'], 'ip', 'link',
+                          'set', if_remote_name, 'address', vif['address'],
+                          run_as_root=True)
+            utils.execute('ip', 'netns', 'exec', instance['uuid'], 'dhclient',
+                          if_remote_name, run_as_root=True)
 
 
     def container_exists(self, instance):
