@@ -20,6 +20,8 @@ native-lxc driver
 
 """
 
+import platform
+
 import lxc
 from oslo.config import cfg
 
@@ -138,3 +140,6 @@ class LXCDriver(driver.ComputeDriver):
             'initiator': volumeutils.get_iscsi_initiator(),
             'host': CONF.host
         }
+
+    def get_available_nodes(self, refresh=False):
+        return [platform.node()]
