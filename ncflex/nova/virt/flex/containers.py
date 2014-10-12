@@ -291,7 +291,7 @@ class Containers(object):
             run_as_root=True)
 
         if vif['type'] == 'ovs':
-            remote_name='ns%s' % vif['id'][:11]
+            if_remote_name='ns%s' % vif['id'][:11]
             utils.execute('ip', 'link', 'set', if_remote_name, 'netns',
                           instance['uuid'], run_as_root=True)
             utils.execute('ip', 'netns', 'exec', instance['uuid'], 'ip', 'link',

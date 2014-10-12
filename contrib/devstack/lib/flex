@@ -22,5 +22,5 @@ function install_flex {
 
 	setup_develop $GRANITE_DIR
 	sudo mkdir -p /etc/nova/rootwrap.d
-	sudo cp GRANITE_DIR/etc/nova/rootwrap.d/* /etc/nova/rootwrap.d
+	sudo cp $GRANITE_DIR/etc/nova/rootwrap.d/* /etc/nova/rootwrap.d
 }
