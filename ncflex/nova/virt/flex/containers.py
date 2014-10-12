@@ -19,6 +19,7 @@ import uuid
 import lxc
 
 from oslo.config import cfg
+from oslo.utils import units
 
 from . import config
 from . import images
@@ -29,7 +30,6 @@ from . import network
 from nova.openstack.common.gettextutils import _  # noqa
 from nova.openstack.common import importutils
 from nova.openstack.common import log as logging
-from nova.openstack.common import units
 from nova import context as nova_context
 from nova import objects
 from nova import utils
