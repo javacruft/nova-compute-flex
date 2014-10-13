@@ -5,3 +5,5 @@
 # flex/virt/lxc/containers.py:
 btrfs: CommandFilter, btrfs, root
 cgm: CommandFilter, cgm, root
+ip: CommandFilter, ip, root
+ln: CommandFilter, ln, root
