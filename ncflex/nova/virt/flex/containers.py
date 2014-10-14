@@ -156,6 +156,7 @@ class Containers(object):
                 utils.execute('lxc-destroy', '-f', '-n', instance['uuid'],
                               '-P', CONF.instances_path,
                               run_as_root=True)
+        network.teardown_network(instance, network_info)
                 
 
     def reboot_container(self, context, instance, network_info, reboot_type,
