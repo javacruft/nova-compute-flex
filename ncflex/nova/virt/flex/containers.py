@@ -85,8 +85,8 @@ class Containers(object):
         utils.execute('cgm', 'movepid', 'all', lxc_cgroup, os.getpid())
 
     	# setup network namespaces
-        if not os.path.exists('/var/run/ns'):
-            utils.execute('mkdir', '-p', '/var/run/ns',
+        if not os.path.exists('/var/run/netnss'):
+            utils.execute('mkdir', '-p', '/var/run/netns',
                           run_as_root=True)
 
     def spawn(self, context, instance, image_meta, injected_files,
