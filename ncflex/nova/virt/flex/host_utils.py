@@ -47,12 +47,12 @@ def get_memory_info():
 
 
 def get_disk_info():
-    hddinfo = os.statvfs(CONF.instances_path)
-    total = hddinfo.f_frsize * hddinfo.f_blocks
-    free = hddinfo.f_frsize * hddinfo.f_bavail
-    used = hddinfo.f_frsize * (hddinfo.f_blocks - hddinfo.f_bfree)
-    return {'total': total, 'free': free, 'used': used}
-
+    st = os.statvfs(CONF.instances_path)
+    return {
+        'total': st.f_blocks * st.f_frsize,
+        'available': st.f_bavail * st.f_frsize,
+        'used': (st.f_blocks - st.f_bfree) * st.f_frsize
+    }
 
 def get_cpu_count():
     try:

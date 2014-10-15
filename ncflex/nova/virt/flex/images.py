@@ -93,7 +93,5 @@ def _setup_container(instance, comtainer_image, idmap):
         size = instance['root_gb']
         utils.execute('btrfs', 'quota', 'enable', container_rootfs,
                       run_as_root=True)
-        utils.execute('btrfs', 'quota', 'rescan', container_rootfs,
-                      run_as_root=True)
         utils.execute('btrfs', 'qgroup', 'limit', '%sG' % size, container_rootfs,
                       run_as_root=True)
