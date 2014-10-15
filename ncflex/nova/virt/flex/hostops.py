@@ -16,12 +16,12 @@ import re
 
 from oslo.config import cfg
 from oslo.utils import units
+from oslo.serialization import jsonutils
 
 import lxc
 
 from . import host_utils
 from nova.openstack.common.gettextutils import _   # noqa
-from nova.openstack.common import jsonutils
 from nova.openstack.common import log as logging
 from nova import utils
 
