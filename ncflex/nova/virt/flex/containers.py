@@ -126,7 +126,7 @@ class Containers(object):
                 LOG.info(_('Starting unprivileged container'))
                 if container.start():
                     LOG.info(_('Container started'))
-                    self.start_nework(instance, network_info, container)
+                    self.start_network(instance, network_info, container)
             elif lxc_type == 'privileged':
                 try:
                     LOG.info(_('Starting privileged container'))
