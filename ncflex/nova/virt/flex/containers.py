@@ -296,13 +296,19 @@ class Containers(object):
 
         if vif['type'] == 'ovs':
             if_remote_name='ns%s' % vif['id'][:11]
+            gateway = network.find_gateway(instance, vif['network'])
+            ip = network.find_fixed_ip(instance, vif['network'])
+
             utils.execute('ip', 'link', 'set', if_remote_name, 'netns',
                           instance['uuid'], run_as_root=True)
             utils.execute('ip', 'netns', 'exec', instance['uuid'], 'ip', 'link',
                           'set', if_remote_name, 'address', vif['address'],
                           run_as_root=True)
-            utils.execute('ip', 'netns', 'exec', instance['uuid'], 'dhclient',
-                          if_remote_name, run_as_root=True)
+            utils.execute('ip', 'netns', 'exec', instance['uuid'], 'ifconfig',
+                          if_remote_name, ip, run_as_root=True)
+            utils.execute('ip', 'netns', 'exec', instance['uuid'],
+                          'ip', 'route', 'add', 'default', 'via',
+                           gateway, 'dev', if_remote_name, run_as_root=True)
 
 
     def container_exists(self, instance):
