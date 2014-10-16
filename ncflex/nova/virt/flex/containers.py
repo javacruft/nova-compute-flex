@@ -126,6 +126,7 @@ class Containers(object):
                 LOG.info(_('Starting unprivileged container'))
                 if container.start():
                     LOG.info(_('Container started'))
+                    self.start_nework(instance, network_info, container)
             elif lxc_type == 'privileged':
                 try:
                     LOG.info(_('Starting privileged container'))
@@ -137,6 +138,8 @@ class Containers(object):
                 except OSError as exc:
                     LOG.warn(_("Container failed to start"))
 
+
+    def start_network(self, instance, network_info, container):
             for vif in network_info:
                 self.vif_driver.plug(instance, vif)
                 self.container_attach_network(instance, vif, container)
