@@ -207,20 +207,6 @@ class Containers(object):
                           '-P', CONF.instances_path,
                           run_as_root=True)
 
-    def shutdown_container(self, instance, network_info, block_device_info):
-        LOG.debug('Shutdown container')
-        (container, lxc_type) = self.get_container_root(instance)
-        if container.running:
-            for vif in network_info:
-                self.driver.unplug(instance, vif)
-            lxc_type = container_utils.lxc_security_info(instance)
-            if lxc_type == 'unprivileged':
-                container.shutdown()
-            elif lxc_type == 'privileged':
-                utils.execute('lxc-stop', '-n', instance['uuid'],
-                              '-P', CONF.instances_path,
-                              run_as_root=True)
-
     def suspend_container(self, instance):
         LOG.debug('Suspend container')
         (container, lxc_type) = self.get_container_root(instance)
