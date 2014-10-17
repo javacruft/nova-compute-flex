@@ -16,6 +16,8 @@
 
 from oslo.config import cfg
 
+from . import utils as container_utils
+
 from nova import exception
 from nova import utils
 from nova.network import manager
@@ -54,20 +56,47 @@ class LXCGenericDriver(object):
                 _("Unexpected vif_type=%s") % vif_type)
     
     def plug_ovs(self, instance, vif):
-        if_local_name = 'tap%s' % vif['id'][:11]
-        if_remote_name = 'ns%s' % vif['id'][:11]
+        """Plug using hybrid strategy
 
-        utils.execute('ip', 'link', 'add', 'name', if_local_name, 'type',
-                      'veth', 'peer', 'name', if_remote_name,
-                      run_as_root=True)
-        linux_net.create_ovs_vif_port(vif['network']['bridge'],
-                                      if_local_name,
-                                      self.get_ovs_interfaceid(vif),
-                                      vif['address'],
-                                      instance['uuid'])
+        Create a per-VIF linux bridge, then link that bridge to the OVS
+        integration bridge via a veth device, setting up the other end
+        of the veth device just like a normal OVS port.  Then boot the
+        VIF on the linux bridge using standard LXC mechanisms.
+        """
+        iface_id = self.get_ovs_interfaceid(vif)
+        br_name = self.get_br_name(vif['id'])
+        v1_name, v2_name = self.get_veth_pair_names(vif['id'])
 
-        utils.execute('ip', 'link', 'set', if_local_name, 'up',
-                      run_as_root=True)
+        if not linux_net.device_exists(br_name):
+            utils.execute('brctl', 'addbr', br_name, run_as_root=True)
+            utils.execute('brctl', 'setfd', br_name, 0, run_as_root=True)
+            utils.execute('brctl', 'stp', br_name, 'off', run_as_root=True)
+            utils.execute('tee',
+                          ('/sys/class/net/%s/bridge/multicast_snooping' %
+                           br_name),
+                           process_input='0',
+                           run_as_root=True,
+                           check_exit_code=[0, 1])
+
+        if not linux_net.device_exists(v2_name):
+            linux_net._create_veth_pair(v1_name, v2_name)
+            utils.execute('ip', 'link', 'set', br_name, 'up', run_as_root=True)
+            utils.execute('brctl', 'addif', br_name, v1_name, run_as_root=True)
+            linux_net.create_ovs_vif_port(self.get_bridge_name(vif),
+                                          v2_name, iface_id, vif['address'],
+                                          instance['uuid'])
+
+        container_utils.write_lxc_usernet(br_name)
+
+    def get_bridge_name(self, vif):
+        return vif['network']['bridge']
+
+    def get_br_name(self, iface_id):
+        return ("qbr" + iface_id)[:network_model.NIC_NAME_LEN]
+
+    def get_veth_pair_names(self, iface_id):
+        return (("qvb%s" % iface_id)[:network_model.NIC_NAME_LEN],
+                ("qvo%s" % iface_id)[:network_model.NIC_NAME_LEN])
 
     def get_ovs_interfaceid(self, vif):
         return vif.get('ovs_interfaceid') or vif['id']
@@ -122,4 +151,21 @@ class LXCGenericDriver(object):
         pass
 
     def unplug_ovs(self, instance, vif):
-        pass
+        try:
+            br_name = self.get_br_name(vif['id'])
+            v1_name, v2_name = self.get_veth_pair_names(vif['id'])
+
+            if linux_net.device_exists(br_name):
+                utils.execute('brctl', 'delif', br_name, v1_name,
+                              run_as_root=True)
+                utils.execute('ip', 'link', 'set', br_name, 'down',
+                              run_as_root=True)
+                utils.execute('brctl', 'delbr', br_name,
+                              run_as_root=True)
+
+            linux_net.delete_ovs_vif_port(self.get_bridge_name(vif),
+                                          v2_name)
+        except processutils.ProcessExecutionError:
+            LOG.exception(_("Failed while unplugging vif"),
+                          instance=instance)
+

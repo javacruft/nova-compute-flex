@@ -119,6 +119,7 @@ class Containers(object):
         cfg = config.LXCConfig(container, instance, image_meta, network_info,
                                self.idmap)
         cfg.get_config()
+        self.start_network(instance, network_info, container)
 
         # Startint the container
         if not container.running:
@@ -140,14 +141,20 @@ class Containers(object):
 
 
     def start_network(self, instance, network_info, container):
-            for vif in network_info:
-                self.vif_driver.plug(instance, vif)
-                self.container_attach_network(instance, vif, container)
+        for vif in network_info:
+            self.vif_driver.plug(instance, vif)
+
+
+    def teardown_network(self, instance, network_info):
+        for vif in network_info:
+            self.vif_driver.unplug(instnace, vif)
 
     def destroy_container(self, context, instance, network_info,
                           block_device_info, destroy_disks):
         LOG.debug('Destroying container')
         (container, lxc_type) = self.get_container_root(instance)
+
+        self.teardown_network(instance, network_info)
         if lxc_type == 'unprivileged':
             if container.running:
                 container.stop()
@@ -159,7 +166,6 @@ class Containers(object):
                 utils.execute('lxc-destroy', '-f', '-n', instance['uuid'],
                               '-P', CONF.instances_path,
                               run_as_root=True)
-        network.teardown_network(instance['uuid'])
                 
 
     def reboot_container(self, context, instance, network_info, reboot_type,
@@ -283,33 +289,6 @@ class Containers(object):
 
     def teardown_network(self, instance, network_info):
         self.vif_driver.unplug(instance, network_info)
-
-    def container_attach_network(self, instance, vif, container):
-        container_pid = self.get_container_pid(instance)
-        if not container_pid:
-            return
-        netns_path = os.path.join('/var/run/netns', instance['uuid'])
-        utils.execute(
-            'ln', '-sf', '/proc/{0}/ns/net'.format(container_pid),
-            '/var/run/netns/{0}'.format(instance['uuid']),
-            run_as_root=True)
-
-        if vif['type'] == 'ovs':
-            if_remote_name='ns%s' % vif['id'][:11]
-            gateway = network.find_gateway(instance, vif['network'])
-            ip = network.find_fixed_ip(instance, vif['network'])
-
-            utils.execute('ip', 'link', 'set', if_remote_name, 'netns',
-                          instance['uuid'], run_as_root=True)
-            utils.execute('ip', 'netns', 'exec', instance['uuid'], 'ip', 'link',
-                          'set', if_remote_name, 'address', vif['address'],
-                          run_as_root=True)
-            utils.execute('ip', 'netns', 'exec', instance['uuid'], 'ifconfig',
-                          if_remote_name, ip, run_as_root=True)
-            utils.execute('ip', 'netns', 'exec', instance['uuid'],
-                          'ip', 'route', 'add', 'default', 'via',
-                           gateway, 'dev', if_remote_name, run_as_root=True)
-
 
     def container_exists(self, instance):
         (container, lxc_type) = self.get_container_root(instance)
