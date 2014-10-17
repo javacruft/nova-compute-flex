@@ -86,7 +86,7 @@ class LXCGenericDriver(object):
                                           v2_name, iface_id, vif['address'],
                                           instance['uuid'])
 
-        container_utils.write_lxc_usernet(br_name)
+        container_utils.write_lxc_usernet(instance, br_name)
 
     def get_bridge_name(self, vif):
         return vif['network']['bridge']

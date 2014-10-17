@@ -22,6 +22,7 @@ from oslo.config import cfg
 
 from nova.openstack.common.gettextutils import _  # noqa
 from nova.openstack.common import log as logging
+from nova.openstack.common import lockutils
 from nova import context as nova_context
 from nova import objects
 from nova import utils
@@ -70,12 +71,14 @@ def get_lxc_security_info(instance):
             return 'privileged'
     return 'unprivileged'
 
-def write_lxc_usernet(bridge):
-    utils.execute('tee',
-                  '/etc/lxc/lxc-usernet',
-                  process_input='ubuntu veth %s 10000' % bridge,
-                  run_as_root=True,
-                  check_exit_code=[0, 1])
+def write_lxc_usernet(instance, bridge):
+    with lockutils.lock(instance.uuid,
+                         lock_file_prefix='nova-compute-flex-write')
+        utils.execute('tee',
+                   '/etc/lxc/lxc-usernet',
+                    process_input='ubuntu veth %s 10000' % bridge,
+                    run_as_root=True,
+                    check_exit_code=[0, 1])
 
 class LXCIdMap(object):
     def __init__(self, ustart, unum, gstart, gnum):

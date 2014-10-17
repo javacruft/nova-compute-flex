@@ -4,3 +4,4 @@ psutil
 oslo.config
 oslo.utils
 oslo.serialization
+lockfile
