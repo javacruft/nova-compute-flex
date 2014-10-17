@@ -33,7 +33,6 @@ if [[ $VIRT_DRIVER == "flex" ]]; then
 				 sudo service systemd-logind.conf restart
 			  fi
 			  echo "ubuntu veth br100 1000" | sudo tee -a /etc/lxc/lxc-usernet
-			  echo "ubuntu veth br-int 1000" | sudo tee -a /etc/lxc/lxc-usernet
 
 		  fi
 		  install_flex
