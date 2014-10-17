@@ -91,7 +91,8 @@ def _setup_container(instance, comtainer_image, idmap):
 
         # setup the user quotas
         size = instance['root_gb']
-        utils.execute('btrfs', 'quota', 'enable', container_rootfs,
-                      run_as_root=True)
-        utils.execute('btrfs', 'qgroup', 'limit', '%sG' % size, container_rootfs,
-                      run_as_root=True)
+        if size != 0:
+            utils.execute('btrfs', 'quota', 'enable', container_rootfs,
+                          run_as_root=True)
+            utils.execute('btrfs', 'qgroup', 'limit', '%sG' % size, container_rootfs,
+                          run_as_root=True)
