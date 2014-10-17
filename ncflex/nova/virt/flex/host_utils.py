@@ -24,27 +24,29 @@ CONF = cfg.CONF
 
 log = logging.getLogger(__name__)
 
+def get_memory_info(meminfo="/proc/meminfo", unit='mB'):
+    # read a /proc/meminfo style file and return
+    # a dict with 'total', 'free', and 'used'
+    mpliers = {'kB': 2**10, 'mB': 2 ** 20, 'B': 1, 'gB': 2 ** 30}
+    data = {}
+    with open(meminfo, "r") as fp:
+        for line in fp:
+            try:
+                key, value, kunit = line.split()
+            except ValueError:
+                key, value = line.split()
+                kunit = 'B'
+            key = key[:-1]  # remove trailing ':'
+            data[key] = int(value) * mpliers[kunit]
 
-def get_memory_info():
-    out = open('/proc/meminfo')
-    for line in out:
-        if 'MemTotal:' == line.split()[0]:
-            split = line.split()
-            total = float(split[1])
-        if 'MemFree:' == line.split()[0]:
-            split = line.split()
-            free = float(split[1])
-        if 'Buffers:' == line.split()[0]:
-            split = line.split()
-            buffers = float(split[1])
-        if 'Cached:' == line.split()[0]:
-            split = line.split()
-            cached = float(split[1])
-    used = (total - (free + buffers + cached))
-    return {'total': int(total / 1024),
-            'free': int(free / 1024),
-            'used': int(used / 1024)}
+    if 'MemAvailable' in data:
+        free = data['MemAvailable']
+    else:
+        free = data['MemFree'] + data['Cached']
 
+    return {'total': data['MemTotal'] / mpliers[unit],
+            'free': free / mpliers[unit],
+            'used': (data['MemTotal'] - free) / mpliers[unit]}
 
 def get_disk_info():
     st = os.statvfs(CONF.instances_path)
