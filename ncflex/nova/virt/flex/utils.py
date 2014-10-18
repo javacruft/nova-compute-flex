@@ -72,13 +72,11 @@ def get_lxc_security_info(instance):
     return 'unprivileged'
 
 def write_lxc_usernet(instance, bridge):
-    with lockutils.lock(instance.uuid,
-                         lock_file_prefix='nova-compute-flex-write'):
-        utils.execute('tee',
-                   '/etc/lxc/lxc-usernet',
-                    process_input='ubuntu veth %s 10000' % bridge,
-                    run_as_root=True,
-                    check_exit_code=[0, 1])
+    utils.execute('tee', '-a',
+               '/etc/lxc/lxc-usernet',
+               process_input='ubuntu veth %s 1\n' % bridge,
+               run_as_root=True,
+               check_exit_code=[0, 1])
 
 class LXCIdMap(object):
     def __init__(self, ustart, unum, gstart, gnum):
