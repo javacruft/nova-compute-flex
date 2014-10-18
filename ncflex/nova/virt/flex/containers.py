@@ -267,14 +267,6 @@ class Containers(object):
                                 encryption):
         self.volumes.disconnect_volume(connection_info, instance, mountpoint)
 
-    def setup_network(self, instance, network_info):
-        container = self.get_container_root(instance)
-        for vif in network_info:
-            self.vif_driver.plug(container, instance, vif)
-
-    def teardown_network(self, instance, network_info):
-        self.vif_driver.unplug(instance, network_info)
-
     def container_exists(self, instance):
         (container, lxc_type) = self.get_container_root(instance)
         if container.running:
