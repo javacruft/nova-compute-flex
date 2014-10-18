@@ -73,7 +73,7 @@ def get_lxc_security_info(instance):
 
 def write_lxc_usernet(instance, bridge):
     with lockutils.lock(instance.uuid,
-                         lock_file_prefix='nova-compute-flex-write')
+                         lock_file_prefix='nova-compute-flex-write'):
         utils.execute('tee',
                    '/etc/lxc/lxc-usernet',
                     process_input='ubuntu veth %s 10000' % bridge,
