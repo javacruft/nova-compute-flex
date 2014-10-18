@@ -25,7 +25,6 @@ from . import config
 from . import images
 from . import utils as container_utils
 from . import volumes
-from . import network
 
 from nova.openstack.common.gettextutils import _  # noqa
 from nova.openstack.common import importutils
