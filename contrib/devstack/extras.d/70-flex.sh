@@ -23,15 +23,11 @@ if [[ $VIRT_DRIVER == "flex" ]]; then
 		  echo_summary "Configuring flex"
 		  if is_ubuntu; then
               install_package python-software-properties
-              sudo apt-add-repository -y ppa:ubuntu-lxc/daily
+              sudo apt-add-repository -y ppa:ubuntu-cloud-archive/juno-staging
               apt_get update
 			  install_package --force-yes lxc lxc-dev
               sudo sed -i 's/USE_LXC_BRIDGE.*$/USE_LXC_BRIDGE="false"/' \
 				 /etc/default/lxc-net
-			  # work around for https://github.com/lxc/lxc/issues/252
-              if [ -x /etc/init/systemd-logind.conf ]; then
-				 sudo service systemd-logind.conf restart
-			  fi
 			  echo "ubuntu veth br100 1000" | sudo tee -a /etc/lxc/lxc-usernet
 
 		  fi
