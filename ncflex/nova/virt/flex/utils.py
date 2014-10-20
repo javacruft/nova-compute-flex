@@ -14,6 +14,7 @@
 #    under the License.
 
 import grp
+import getpass
 import pwd
 import os
 
@@ -74,7 +75,7 @@ def get_lxc_security_info(instance):
 def write_lxc_usernet(instance, bridge):
     utils.execute('tee', '-a',
                '/etc/lxc/lxc-usernet',
-               process_input='ubuntu veth %s 1\n' % bridge,
+               process_input='%s veth %s 1\n' % (getpass.getuser(), bridge)
                run_as_root=True,
                check_exit_code=[0, 1])
 
