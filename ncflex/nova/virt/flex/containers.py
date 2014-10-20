@@ -146,7 +146,7 @@ class Containers(object):
 
     def teardown_network(self, instance, network_info):
         for vif in network_info:
-            self.vif_driver.unplug(instnace, vif)
+            self.vif_driver.unplug(instance, vif)
 
     def destroy_container(self, context, instance, network_info,
                           block_device_info, destroy_disks):
