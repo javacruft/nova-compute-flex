@@ -72,12 +72,13 @@ def get_lxc_security_info(instance):
             return 'privileged'
     return 'unprivileged'
 
-def write_lxc_usernet(instance, bridge):
-    utils.execute('tee', '-a',
-               '/etc/lxc/lxc-usernet',
-               process_input='%s veth %s 1\n' % (getpass.getuser(), bridge),
-               run_as_root=True,
-               check_exit_code=[0, 1])
+
+def write_lxc_usernet(instance, bridge, user=None, count=1):
+    if user is None:
+        user = getpass.getuser()
+    utils.execute('lxc-usernet-manage', 'set', user, bridge, str(count),
+                  run_as_root=True, check_exit_code=[0])
+
 
 class LXCIdMap(object):
     def __init__(self, ustart, unum, gstart, gnum):
