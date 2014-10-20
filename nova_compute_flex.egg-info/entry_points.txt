@@ -1,2 +1,0 @@
-[console_scripts]
-lxc-usernet-manage = ncflex.nova.virt.flex.lxc_usernet:manage_main
