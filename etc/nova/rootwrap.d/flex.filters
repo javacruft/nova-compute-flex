@@ -8,4 +8,11 @@ cgm: CommandFilter, cgm, root
 brctl: CommandFilter, brctl, root
 ip: CommandFilter, ip, root
 tee: CommandFilter, tee, root
+
 lxc-usernet-manage: CommandFilter, lxc-usernet-manage, root
+
+lxc-start: CommandFilter, lxc-start, root
+lxc-stop: CommandFilter, lxc-stop, root
+lxc-destroy: CommandFilter, lxc-destroy, root
+lxc-freeze: CommandFilter, lxc-freeze, root
+lxc-device: CommandFilter, lxc-device, root
