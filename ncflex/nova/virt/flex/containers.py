@@ -16,6 +16,7 @@ import os
 import pwd
 import uuid
 
+import eventlet
 import lxc
 
 from oslo.config import cfg
@@ -57,11 +58,14 @@ lxc_opts = [
 LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
+CONF.import_opt('vif_plugging_timeout', 'nova.virt.driver')
+CONF.import_opt('vif_plugging_is_fatal', 'nova.virt.driver')
 CONF.register_opts(lxc_opts, 'lxc')
 
 
 class Containers(object):
-    def __init__(self):
+    def __init__(self, virtapi):
+	self.virtapi = virtapi
         self.instance_path = None
         self.container_rootfs = None
 
@@ -118,8 +122,26 @@ class Containers(object):
         # Write the LXC confgiuration file
         cfg = config.LXCConfig(container, instance, image_meta, network_info,
                                self.idmap)
-        cfg.get_config()
-        self.start_network(instance, network_info, container)
+
+
+        timeout = CONF.vif_plugging_timeout
+        # check to see if neturon is ready before
+        # doing anything else
+        if (not container.running and
+             utils.is_neutron() and timeout):
+             events = self._get_neutron_events(network_info)
+        else:
+            evevnts = {}
+
+        try:
+            with self.virtapi.wait_for_instance_event(
+                instance, events, deadline=timeout,
+                error_callback=self._neutron_failed_callback):
+                    cfg.get_config()
+                    self.start_network(instance, network_info)
+        except exception.VirtualInterfaceCreateException:
+            self.destroy_container(context, instance, network_info,
+                                   block_device_info, destroy_disks)
 
         # Startint the container
         if not container.running:
@@ -127,7 +149,6 @@ class Containers(object):
                 LOG.info(_('Starting unprivileged container'))
                 if container.start():
                     LOG.info(_('Container started'))
-                    self.start_network(instance, network_info, container)
             elif lxc_type == 'privileged':
                 try:
                     LOG.info(_('Starting privileged container'))
@@ -140,7 +161,7 @@ class Containers(object):
                     LOG.warn(_("Container failed to start"))
 
 
-    def start_network(self, instance, network_info, container):
+    def start_network(self, instance, network_info):
         for vif in network_info:
             self.vif_driver.plug(instance, vif)
 
@@ -283,3 +304,15 @@ class Containers(object):
         container = lxc.Container(instance['uuid'])
         container.set_config_path(CONF.instances_path)
         return (container, lxc_type)
+
+    def _get_neutron_events(self, network_info):
+        return [('network-vif-plugged', vif['id'])
+                for vif in network_info if vif.get('active', True) is False]
+
+    def _neutron_failed_callback(self, event_name, instance):
+        LOG.error(_('Neutron Reported failure on event  '
+                    '%(event)s for instance %(uuid)s'),
+                {'event': event_name, 'uuid': instance.uuid})
+        if CONF.vif_plugging_is_fatal:
+            raise exception.VirtualInterfaceCreateException()
+                    

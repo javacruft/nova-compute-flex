@@ -43,7 +43,7 @@ LOG = logging.getLogger(__name__)
 class LXCDriver(driver.ComputeDriver):
     def __init__(self, virtapi, read_only=False):
         super(LXCDriver, self).__init__(virtapi)
-        self.containers = containers.Containers()
+        self.containers = containers.Containers(virtapi)
         self.hostops = hostops.HostOps()
 
     def init_host(self, host):
