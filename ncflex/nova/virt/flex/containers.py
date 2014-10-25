@@ -30,6 +30,7 @@ from . import volumes
 from nova.openstack.common.gettextutils import _  # noqa
 from nova.openstack.common import importutils
 from nova.openstack.common import log as logging
+from nova.compute import power_state
 from nova import context as nova_context
 from nova import exception
 from nova import objects
@@ -293,6 +294,23 @@ class Containers(object):
             return True
         else:
             return False
+
+    def get_container_info(self, instance):
+        (container, lxc_type) = self.get_container_root(instance)
+        cpu = int(container_utils.get_continer_vcpu_usage(instance) / 1024)
+        mem = container_utils.get_container_mem_usage(instance, container)
+        state = self.container_exists(instance)
+        if state:
+            pstate = power_state.RUNNING
+        elif state is false:
+            pstate = power_state.SHUTDOWN
+        else:
+            pstate = power_state.RUNNING
+        return {'state': pstate,
+                'mem': mem,
+                'max_mem': mem,
+                'num_cpu': cpu,
+                'cpu_time': 0}
 
     def get_container_pid(self, instance):
         (container, lxc_type) = self.get_container_root(instance)
