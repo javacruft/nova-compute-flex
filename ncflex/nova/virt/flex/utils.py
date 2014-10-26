@@ -20,6 +20,7 @@ import os
 
 
 from oslo.config import cfg
+from oslo.utils import units
 
 from nova.openstack.common.gettextutils import _  # noqa
 from nova.openstack.common import log as logging
@@ -71,6 +72,13 @@ def get_lxc_security_info(instance):
         elif lxc_status == 'true':
             return 'privileged'
     return 'unprivileged'
+
+def get_container_mem_info(instance, container):
+    mem = int(container.get_cgroup_item('memory.usage_in_bytes'))
+    return (mem / 1024) / 1024
+
+def get_container_cores(instance):
+    return int(instance['vcpus'] * 1024)
 
 
 def write_lxc_usernet(instance, bridge, user=None, count=1):

@@ -13,6 +13,7 @@
 #    under the License.
 
 import os
+import multiprocessing
 
 from oslo.config import cfg
 import psutil
@@ -57,7 +58,4 @@ def get_disk_info():
     }
 
 def get_cpu_count():
-    try:
-        return psutil.cpu_count()
-    except (ImportError, AttributeError):
-        return 1
+    return multiprocessing.cpu_count()

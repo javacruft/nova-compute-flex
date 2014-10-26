@@ -112,18 +112,7 @@ class LXCDriver(driver.ComputeDriver):
         pass
 
     def get_info(self, instance):
-        state = self.containers.container_exists(instance)
-        if state:
-            pstate = power_state.RUNNING
-        elif state is False:
-            pstate = power_state.SHUTDOWN
-        else:
-            pstate = power_state.RUNNING
-        return {'state': pstate,
-                'max_mem': 0,
-                'mem': 0,
-                'num_cpu': 2,
-                'cpu_time': 0}
+        return self.containers.get_container_info(instance)
 
     def get_console_output(self, context, instance):
         return self.containers.get_container_console(instance)
