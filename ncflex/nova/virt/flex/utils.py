@@ -74,7 +74,10 @@ def get_lxc_security_info(instance):
     return 'unprivileged'
 
 def get_container_mem_info(instance, container):
-    mem = int(container.get_cgroup_item('memory.usage_in_bytes'))
+    try:
+        mem = int(container.get_cgroup_item('memory.usage_in_bytes'))
+    except KeyError:
+        return 0
     return (mem / 1024) / 1024
 
 def get_container_cores(instance):
