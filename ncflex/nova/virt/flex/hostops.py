@@ -57,9 +57,7 @@ class HostOps(object):
 
     def _update_status(self):
         memory = host_utils.get_memory_info()
-        log.info(_('!!! memory -> %s') % memory)
         disk = host_utils.get_disk_info()
-        log.info(_('!!! disk -> %s') % disk)
 
         dic = {'vcpus': host_utils.get_cpu_count(),
                'memory_mb': memory['total'],

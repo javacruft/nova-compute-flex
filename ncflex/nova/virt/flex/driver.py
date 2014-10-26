@@ -28,6 +28,7 @@ from oslo.config import cfg
 from . import containers
 from . import hostops
 
+from nova.compute import power_state
 from nova.openstack.common import log as logging
 from nova.virt import driver
 from nova.virt import volumeutils
@@ -111,11 +112,17 @@ class LXCDriver(driver.ComputeDriver):
         pass
 
     def get_info(self, instance):
-        info = self.containers.get_container_info(instance)
-        return {'state': info['state'],
-                'max_mem': info['max_mem'],
-                'mem': info['mem'],
-                'num_cpu': info['num_cpu'],
+        state = self.containers.container_exists(instance)
+        if state:
+            pstate = power_state.RUNNING
+        elif state is False:
+            pstate = power_state.SHUTDOWN
+        else:
+            pstate = power_state.RUNNING
+        return {'state': pstate,
+                'max_mem': 0,
+                'mem': 0,
+                'num_cpu': 2,
                 'cpu_time': 0}
 
     def get_console_output(self, context, instance):

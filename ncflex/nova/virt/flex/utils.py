@@ -73,16 +73,6 @@ def get_lxc_security_info(instance):
     return 'unprivileged'
 
 
-def get_container_mem_usage(instance, container):
-    mem = int(container.get_cgroup_item('memory.usage_in_bytes'))
-    return int(mem / 1024 / 1024)
-
-def get_continer_vcpu_usage(instance):
-    '''
-    LXC does not have the concept of vcpu.
-    '''
-    return int(instance['vcpus'] * 1024)
-
 def write_lxc_usernet(instance, bridge, user=None, count=1):
     if user is None:
         user = getpass.getuser()

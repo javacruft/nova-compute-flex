@@ -120,8 +120,6 @@ class LXCConfig(object):
 
     def config_lxc_limits(self):
         self.container.append_config_item('lxc.cgroup.memory.limit_in_bytes','%sM' % self.flavor.memory_mb)
-        self.container.append_config_item('lxc.cgroup.cpu.shares', '%s' 
-                                          % container_utils.get_continer_vcpu_usage(self.instance))
         #self.container.append_config_item('lxc.cgroup.lxc.cgroup.cpuset.cpubind', '100')
 
     def config_lxc_user(self):
