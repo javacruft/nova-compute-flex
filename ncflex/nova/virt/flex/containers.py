@@ -27,6 +27,7 @@ from . import images
 from . import utils as container_utils
 from . import volumes
 
+from nova import exception
 from nova.compute import power_state
 from nova.openstack.common.gettextutils import _  # noqa
 from nova.openstack.common import importutils
@@ -299,7 +300,7 @@ class Containers(object):
         (container,lxc_type) = self.get_container_root(instance)
 
         mem = container_utils.get_container_mem_info(instance, container)
-        cores = int(container_utils.get_contaoner_cores(instance)) / 1024
+        cores = int(container_utils.get_container_cores(instance)) / 1024
         state = self.container_exists(instance)
         if state:
             pstate = power_state.RUNNING
