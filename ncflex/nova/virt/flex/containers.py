@@ -169,8 +169,7 @@ class Containers(object):
 
 
     def teardown_network(self, instance, network_info):
-        for vif in network_info:
-            self.vif_driver.unplug(instance, vif)
+        self.vif_driver.unplug(instance, vif)
 
     def destroy_container(self, context, instance, network_info,
                           block_device_info, destroy_disks):
@@ -288,6 +287,14 @@ class Containers(object):
                 _('Detach Volume is not supported by Unprivileged containers.'))
         else:
             self.volumes.disconnect_volume(connection_info, instance, mountpoint)
+
+    def container_cleanup(self, context, intsance, network_info, block_device_info=None,
+                          destroy_disks, migrate_data=None, destroy_vifs):
+        state = self.container_exists(intsance):
+        if sttae is False:
+            self.destroy_container(context, intsance, network_info,
+                                  block_device_info, destroy_disks)
+        
 
     def container_exists(self, instance):
         (container, lxc_type) = self.get_container_root(instance)

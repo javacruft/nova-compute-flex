@@ -93,6 +93,12 @@ class LXCDriver(driver.ComputeDriver):
                 destroy_disks=True):
         self.containers.destroy_container(context, instance, network_info,
                                           block_device_info, destroy_disks)
+    
+    def cleanup(self. context, instance, network_info, block_device_info=None,
+                destroy_disks=True, migrate_data=None, destroy_vifs=True):
+        self.containers.cleanup_container(context, instance, network_info,
+                                          block_device_info, destroy_disks,
+                                          destory_vifs)
 
     def attach_volume(self, context, connection_info, instance, mountpoint,
                       disk_bus=None, device_type=None, encryption=None):
