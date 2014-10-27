@@ -288,8 +288,8 @@ class Containers(object):
         else:
             self.volumes.disconnect_volume(connection_info, instance, mountpoint)
 
-    def container_cleanup(self, context, intsance, network_info, block_device_info=None,
-                          destroy_disks, migrate_data=None, destroy_vifs):
+    def container_cleanup(self, context, intsance, network_info, block_device_info,
+                          destroy_disks, migrate_data, destroy_vifs):
         state = self.container_exists(intsance)
         if sttae is False:
             self.destroy_container(context, intsance, network_info,
