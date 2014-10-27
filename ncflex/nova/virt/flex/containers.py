@@ -169,7 +169,8 @@ class Containers(object):
 
 
     def teardown_network(self, instance, network_info):
-        self.vif_driver.unplug(instance, vif)
+        for vif in network_info:
+            self.vif_driver.unplug(instance, vif)
 
     def destroy_container(self, context, instance, network_info,
                           block_device_info, destroy_disks):
@@ -290,10 +291,8 @@ class Containers(object):
 
     def container_cleanup(self, context, intsance, network_info, block_device_info,
                           destroy_disks, migrate_data, destroy_vifs):
-        state = self.container_exists(intsance)
-        if sttae is False:
-            self.destroy_container(context, intsance, network_info,
-                                  block_device_info, destroy_disks)
+        self.destroy_container(context, intsance, network_info,
+                               block_device_info, destroy_disks)
         
 
     def container_exists(self, instance):
