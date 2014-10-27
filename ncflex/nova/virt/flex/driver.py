@@ -52,7 +52,7 @@ class LXCDriver(driver.ComputeDriver):
     def list_instances(self):
         return lxc.list_containers(config_path=CONF.instances_path)
 
-    def list_instance_uuids(self)
+    def list_instance_uuids(self):
         return self.list_instances()
 
     def spawn(self, context, instance, image_meta, injected_files,
