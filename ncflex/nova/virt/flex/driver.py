@@ -123,9 +123,6 @@ class LXCDriver(driver.ComputeDriver):
     def get_available_resource(self, nodename):
         return self.hostops.get_available_resource(nodename)
 
-    def get_host_stats(self, refresh=False):
-        return self.hostops.get_host_stats(refresh)
-
     def get_volume_connector(self, instance):
         return {
             'ip': CONF.my_ip,

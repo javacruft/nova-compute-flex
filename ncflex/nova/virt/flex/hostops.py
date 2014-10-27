@@ -47,11 +47,6 @@ class HostOps(object):
     def __init__(self):
         self._stats = None
 
-    def get_host_stats(self, refresh=False):
-        if refresh or self._stats is None:
-            self._update_status()
-        return self._stats
-
     def get_available_resource(self, nodename):
         return self._update_status()
 
