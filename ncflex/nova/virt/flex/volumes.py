@@ -29,6 +29,7 @@ LOG = logging.getLogger(__name__)
 
 
 class VolumeOps(object):
+
     def __init__(self):
         self.num_scan_tries = CONF.lxc.num_iscsi_scan_tries
 
@@ -140,8 +141,8 @@ class VolumeOps(object):
                                   "node.session.auth.password",
                                   iscsi_properties['auth_password'])
 
-        #duplicate logins crash iscsiadm after load,
-        #so we scan active sessions to see if the node is logged in.
+        # duplicate logins crash iscsiadm after load,
+        # so we scan active sessions to see if the node is logged in.
         out = self._run_iscsiadm_bare(["-m", "session"],
                                       run_as_root=True,
                                       check_exit_code=[0, 1, 21])[0] or ""
@@ -162,8 +163,8 @@ class VolumeOps(object):
                                    ("--login",),
                                    check_exit_code=[0, 255])
             except processutils.ProcessExecutionError as err:
-                #as this might be one of many paths,
-                #only set successful logins to startup automatically
+                # as this might be one of many paths,
+                # only set successful logins to startup automatically
                 if err.exit_code in [15]:
                     self._iscsiadm_update(iscsi_properties,
                                           "node.startup",
@@ -186,7 +187,7 @@ class VolumeOps(object):
         device = os.path.realpath(single_path_device)
 
         out = self._run_multipath(['-ll',
-                                  device],
+                                   device],
                                   check_exit_code=[0, 1])[0]
         mpath_line = [line for line in out.splitlines()
                       if "scsi_id" not in line]  # ignore udev errors

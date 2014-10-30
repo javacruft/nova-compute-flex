@@ -16,7 +16,6 @@ import os
 import pwd
 import uuid
 
-import eventlet
 import lxc
 
 from oslo.config import cfg
@@ -27,7 +26,6 @@ from . import images
 from . import utils as container_utils
 from . import volumes
 
-from nova import exception
 from nova.compute import power_state
 from nova.openstack.common.gettextutils import _  # noqa
 from nova.openstack.common import importutils
@@ -66,8 +64,9 @@ CONF.register_opts(lxc_opts, 'lxc')
 
 
 class Containers(object):
+
     def __init__(self, virtapi):
-	self.virtapi = virtapi
+        self.virtapi = virtapi
         self.instance_path = None
         self.container_rootfs = None
 
@@ -80,7 +79,7 @@ class Containers(object):
         if not lxc.version:
             raise Exception('LXC is not installed')
 
-	    # set up cgroups
+            # set up cgroups
         lxc_cgroup = uuid.uuid4()
         utils.execute('cgm', 'create', 'all', lxc_cgroup,
                       run_as_root=True)
@@ -90,7 +89,7 @@ class Containers(object):
                       run_as_root=True)
         utils.execute('cgm', 'movepid', 'all', lxc_cgroup, os.getpid())
 
-    	# setup network namespaces
+        # setup network namespaces
         if not os.path.exists('/var/run/netnss'):
             utils.execute('mkdir', '-p', '/var/run/netns',
                           run_as_root=True)
@@ -119,33 +118,32 @@ class Containers(object):
 
         # Create the LXC container from the image
         images.create_container(context, instance, image_meta,
-                               container_image, self.idmap, flavor)
+                                container_image, self.idmap, flavor)
 
         # Write the LXC confgiuration file
         cfg = config.LXCConfig(container, instance, image_meta, network_info,
                                self.idmap)
 
-
         timeout = CONF.vif_plugging_timeout
         # check to see if neturon is ready before
         # doing anything else
         if (not container.running and
-             utils.is_neutron() and timeout):
-             events = self._get_neutron_events(network_info)
+                utils.is_neutron() and timeout):
+            events = self._get_neutron_events(network_info)
         else:
-            evevnts = {}
+            events = {}
 
         try:
             with self.virtapi.wait_for_instance_event(
-                instance, events, deadline=timeout,
-                error_callback=self._neutron_failed_callback):
-                    cfg.get_config()
-                    self.start_network(instance, network_info)
+                    instance, events, deadline=timeout,
+                    error_callback=self._neutron_failed_callback):
+                cfg.get_config()
+                self.start_network(instance, network_info)
         except exception.VirtualInterfaceCreateException:
             self.destroy_container(context, instance, network_info,
-                                   block_device_info, destroy_disks)
+                                   block_device_info, destroy_disks=True)
 
-        # Startint the container
+        # Starting the container
         if not container.running:
             if lxc_type == 'unprivileged':
                 LOG.info(_('Starting unprivileged container'))
@@ -160,13 +158,11 @@ class Containers(object):
                     if container.start():
                         LOG.info(_('Container started'))
                 except OSError as exc:
-                    LOG.warn(_("Container failed to start"))
-
+                    LOG.warn(_("Container failed to start: %s") % exc)
 
     def start_network(self, instance, network_info):
         for vif in network_info:
             self.vif_driver.plug(instance, vif)
-
 
     def teardown_network(self, instance, network_info):
         for vif in network_info:
@@ -186,10 +182,9 @@ class Containers(object):
                 utils.execute('lxc-destroy', '-n', instance['uuid'],
                               '-P', CONF.instances_path)
         elif lxc_type == 'privileged':
-                utils.execute('lxc-destroy', '-f', '-n', instance['uuid'],
-                              '-P', CONF.instances_path,
-                              run_as_root=True)
-                
+            utils.execute('lxc-destroy', '-f', '-n', instance['uuid'],
+                          '-P', CONF.instances_path,
+                          run_as_root=True)
 
     def reboot_container(self, context, instance, network_info, reboot_type,
                          block_device_info, bad_volumes_callback):
@@ -203,7 +198,6 @@ class Containers(object):
             utils.execute('lxc-stop', '-n', instance['uuid'],
                           '-r', '-P', CONF.instances_path,
                           run_as_root=True)
-            
 
     def stop_container(self, instance):
         LOG.debug('Stopping container')
@@ -216,7 +210,6 @@ class Containers(object):
             utils.execute('lxc-stop', '-n', instance['uuid'],
                           '-P', CONF.instances_path,
                           run_as_root=True)
-
 
     def start_container(self, context, instance, network_info,
                         block_device_info):
@@ -262,7 +255,7 @@ class Containers(object):
             if remaining > 0:
                 LOG.info(_('Truncated console log returned, '
                            '%d bytes ignored'),
-                           remaining, instance=instance)
+                         remaining, instance=instance)
             return log_data
 
     def attach_container_volume(self, context, connection_info, instance,
@@ -271,29 +264,35 @@ class Containers(object):
         lxc_type = container_utils.get_lxc_security_info(instance)
         if lxc_type == 'unprivileged':
             raise exception.NovaException(
-                _('Attach Volume is not supported by Unprivileged containers.'))
+                _('Attach Volume is not supported by '
+                  'Unprivileged containers.'))
         else:
-            host_device = self.volumes.connect_volume(connection_info, instance,
+            host_device = self.volumes.connect_volume(connection_info,
+                                                      instance,
                                                       mountpoint)
             if host_device:
                 utils.execute('lxc-device', '-P', CONF.instances_path,
                               '-n', instance['uuid'], 'add', host_device,
-                               mount_point, run_as_root=True)
+                              mountpoint, run_as_root=True)
 
     def detach_container_volume(self, connection_info, instance, mountpoint,
                                 encryption):
         lxc_type = container_utils.get_lxc_security_info(instance)
         if lxc_type == 'unprivileged':
             raise exception.NovaException(
-                _('Detach Volume is not supported by Unprivileged containers.'))
+                _('Detach Volume is not supported by'
+                  ' Unprivileged containers.'))
         else:
-            self.volumes.disconnect_volume(connection_info, instance, mountpoint)
+            self.volumes.disconnect_volume(
+                connection_info,
+                instance,
+                mountpoint)
 
-    def container_cleanup(self, context, intsance, network_info, block_device_info,
+    def container_cleanup(self, context, instance, network_info,
+                          block_device_info,
                           destroy_disks, migrate_data, destroy_vifs):
-        self.destroy_container(context, intsance, network_info,
+        self.destroy_container(context, instance, network_info,
                                block_device_info, destroy_disks)
-        
 
     def container_exists(self, instance):
         (container, lxc_type) = self.get_container_root(instance)
@@ -303,23 +302,20 @@ class Containers(object):
             return False
 
     def get_container_info(self, instance):
-        (container,lxc_type) = self.get_container_root(instance)
+        (container, lxc_type) = self.get_container_root(instance)
 
         mem = container_utils.get_container_mem_info(instance, container)
         cores = int(container_utils.get_container_cores(instance)) / 1024
         state = self.container_exists(instance)
-        if state:
-            pstate = power_state.RUNNING
-        elif state is False:
+        if state is False:
             pstate = power_state.SHUTDOWN
         else:
             pstate = power_state.RUNNING
         return {'state': pstate,
                 'max_mem': mem,
                 'mem': mem,
-                'num_cpu': 2,
+                'num_cpu': cores,
                 'cpu_time': 0}
-
 
     def get_container_pid(self, instance):
         (container, lxc_type) = self.get_container_root(instance)
@@ -339,7 +335,6 @@ class Containers(object):
     def _neutron_failed_callback(self, event_name, instance):
         LOG.error(_('Neutron Reported failure on event  '
                     '%(event)s for instance %(uuid)s'),
-                {'event': event_name, 'uuid': instance.uuid})
+                  {'event': event_name, 'uuid': instance.uuid})
         if CONF.vif_plugging_is_fatal:
             raise exception.VirtualInterfaceCreateException()
-                    

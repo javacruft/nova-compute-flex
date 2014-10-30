@@ -18,14 +18,10 @@ from oslo.config import cfg
 
 from . import utils as container_utils
 
-from nova.openstack.common import fileutils
-from nova.openstack.common.gettextutils import _ # noqa
-from nova.openstack.common import importutils
+from nova.openstack.common.gettextutils import _  # noqa
 from nova.openstack.common import log as logging
-from nova import exception
 from nova import context as nova_context
 from nova import objects
-from nova import utils
 
 LOG = logging.getLogger(__name__)
 
@@ -33,6 +29,7 @@ CONF = cfg.CONF
 
 
 class LXCConfig(object):
+
     def __init__(self, container, instance, image_meta, network_info, idmap):
         self.container = container
         self.instance = instance
@@ -67,10 +64,10 @@ class LXCConfig(object):
 
         templates = []
         if (self.image_meta and
-            self.image_meta.get('properties', {}).get('template')):
-                lxc_template = self.image_meta['propeties'].get('template')
+                self.image_meta.get('properties', {}).get('template')):
+            lxc_template = self.image_meta['propeties'].get('template')
         else:
-                lxc_template = CONF.lxc.lxc_default_template
+            lxc_template = CONF.lxc.lxc_default_template
         path = os.listdir(CONF.lxc.lxc_template_dir)
         for line in path:
             templates.append(line.replace('lxc-', ''))
@@ -97,8 +94,10 @@ class LXCConfig(object):
             self.container.append_config_item('lxc.rootfs', container_rootfs)
 
     def config_lxc_logging(self):
-        self.container.append_config_item('lxc.logfile',
-                        container_utils.get_container_logfile(self.instance))
+        self.container.append_config_item(
+            'lxc.logfile',
+            container_utils.get_container_logfile(self.instance)
+        )
 
     def config_lxc_network(self):
         for vif in self.network_info:
@@ -115,14 +114,22 @@ class LXCConfig(object):
         self.container.append_config_item('lxc.network.link', bridge)
 
     def config_lxc_console(self):
-        self.container.append_config_item('lxc.console.logfile',
-                    container_utils.get_container_console(self.instance))
+        self.container.append_config_item(
+            'lxc.console.logfile',
+            container_utils.get_container_console(self.instance)
+        )
 
     def config_lxc_limits(self):
-        self.container.append_config_item('lxc.cgroup.memory.limit_in_bytes','%sM' % self.flavor.memory_mb)
-        self.container.append_config_item('lxc.cgroup.cpu.shares', '%s'
-                                           % container_utils.get_container_cores(self.instance))
-        #self.container.append_config_item('lxc.cgroup.lxc.cgroup.cpuset.cpubind', '100')
+        self.container.append_config_item(
+            'lxc.cgroup.memory.limit_in_bytes',
+            '%sM' % self.flavor.memory_mb
+        )
+        self.container.append_config_item(
+            'lxc.cgroup.cpu.shares',
+            '%s' % container_utils.get_container_cores(self.instance)
+        )
+        # self.container.append_config_item('lxc.cgroup.lxc.cgroup.cpuset.cpubind',
+        #                                   '100')
 
     def config_lxc_user(self):
         if self.lxc_type == 'unprivileged':

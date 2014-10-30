@@ -44,6 +44,7 @@ def parse_version(version):
 
 
 class HostOps(object):
+
     def __init__(self):
         self._stats = None
 
@@ -65,9 +66,9 @@ class HostOps(object):
                'hypervisor_hostname': CONF.host,
                'cpu_info': '?',
                'supported_instances': jsonutils.dumps([
-                                      ('i686', 'lxc', 'lxc'),
-                                      ('x86_64', 'lxc', 'lxc'),
-                                    ])}
+                   ('i686', 'lxc', 'lxc'),
+                   ('x86_64', 'lxc', 'lxc'),
+               ])}
 
         self._stats = dic
         return self._stats

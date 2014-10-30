@@ -28,7 +28,6 @@ from oslo.config import cfg
 from . import containers
 from . import hostops
 
-from nova.compute import power_state
 from nova.openstack.common import log as logging
 from nova.virt import driver
 from nova.virt import volumeutils
@@ -41,6 +40,7 @@ LOG = logging.getLogger(__name__)
 
 
 class LXCDriver(driver.ComputeDriver):
+
     def __init__(self, virtapi, read_only=False):
         super(LXCDriver, self).__init__(virtapi)
         self.containers = containers.Containers(virtapi)
@@ -93,12 +93,12 @@ class LXCDriver(driver.ComputeDriver):
                 destroy_disks=True):
         self.containers.destroy_container(context, instance, network_info,
                                           block_device_info, destroy_disks)
-    
+
     def cleanup(self, context, instance, network_info, block_device_info=None,
                 destroy_disks=True, migrate_data=None, destroy_vifs=True):
         self.containers.cleanup_container(context, instance, network_info,
                                           block_device_info, destroy_disks,
-                                          destory_vifs)
+                                          destroy_vifs)
 
     def attach_volume(self, context, connection_info, instance, mountpoint,
                       disk_bus=None, device_type=None, encryption=None):

@@ -20,7 +20,7 @@ from . import utils as container_utils
 
 from nova import exception
 from nova import utils
-from nova.network import manager
+from nova import processutils
 from nova.network import linux_net
 from nova.network import model as network_model
 from nova.openstack.common.gettextutils import _
@@ -34,13 +34,14 @@ LOG = logging.getLogger(__name__)
 
 
 class LXCGenericDriver(object):
+
     def plug(self, instance, vif):
         vif_type = vif['type']
 
         LOG.debug('vif_type=%(vif_type)s instance=%(instance)s '
                   'vif=%(vif)s',
                   {'vif_type': vif_type, 'instance': instance,
-                  'vif': vif})
+                   'vif': vif})
 
         if vif_type is None:
             raise exception.NovaException(
@@ -54,7 +55,7 @@ class LXCGenericDriver(object):
         else:
             raise exception.NovaException(
                 _("Unexpected vif_type=%s") % vif_type)
-    
+
     def plug_ovs(self, instance, vif):
         """Plug using hybrid strategy
 
@@ -74,9 +75,9 @@ class LXCGenericDriver(object):
             utils.execute('tee',
                           ('/sys/class/net/%s/bridge/multicast_snooping' %
                            br_name),
-                           process_input='0',
-                           run_as_root=True,
-                           check_exit_code=[0, 1])
+                          process_input='0',
+                          run_as_root=True,
+                          check_exit_code=[0, 1])
 
         if not linux_net.device_exists(v2_name):
             linux_net._create_veth_pair(v1_name, v2_name)
@@ -107,24 +108,23 @@ class LXCGenericDriver(object):
                 network.get_meta('should_create_bridge', False)):
             if network.get_meta('should_create_vlan', False):
                 iface = CONF.vlan_interface or \
-                        network.get_meta('bridge_interface')
+                    network.get_meta('bridge_interface')
                 LOG.debug('Ensuring vlan %(vlan)s and bridge %(bridge)s',
                           {'vlan': network.get_meta('vlan'),
-                          'bridge': vif['network']['bridge']},
-                           instance=instance)
+                           'bridge': vif['network']['bridge']},
+                          instance=instance)
                 linux_net.LinuxBridgeInterfaceDriver.ensure_vlan_bridge(
-                                            network.get_meta('vlan'),
-                                            vif['network']['bridge'],
-                                            iface)
+                    network.get_meta('vlan'),
+                    vif['network']['bridge'],
+                    iface)
             else:
                 iface = CONF.flat_interface or \
-                        network.get_meta('bridge_interface')
+                    network.get_meta('bridge_interface')
                 LOG.debug("Ensuring bridge %s",
-                           vif['network']['bridge'], instance=instance)
+                          vif['network']['bridge'], instance=instance)
                 linux_net.LinuxBridgeInterfaceDriver.ensure_bridge(
-                                        vif['network']['bridge'],
-                                        iface)
-
+                    vif['network']['bridge'],
+                    iface)
 
     def unplug(self, instance, vif):
         vif_type = vif['type']
@@ -168,4 +168,3 @@ class LXCGenericDriver(object):
         except processutils.ProcessExecutionError:
             LOG.exception(_("Failed while unplugging vif"),
                           instance=instance)
-

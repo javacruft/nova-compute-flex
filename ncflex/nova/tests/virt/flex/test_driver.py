@@ -5,7 +5,6 @@ from oslo.config import cfg
 
 from ncflex.nova.virt.flex import containers
 from ncflex.nova.virt.flex import driver as lxc_connection
-from ncflex.nova.virt.flex import images
 from nova.compute import flavors
 from nova.compute import power_state
 from nova import context
@@ -15,7 +14,9 @@ from nova import test
 CONF = cfg.CONF
 CONF.import_opt('instances_path', 'nova.compute.manager')
 
+
 class GraniteDriverTestCase(test.TestCase):
+
     def setUp(self):
         super(GraniteDriverTestCase, self).setUp()
         self.flags(instances_path=self.useFixture(fixtures.TempDir()).path)

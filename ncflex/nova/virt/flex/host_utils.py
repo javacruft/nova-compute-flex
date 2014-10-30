@@ -16,7 +16,6 @@ import os
 import multiprocessing
 
 from oslo.config import cfg
-import psutil
 
 from nova.openstack.common.gettextutils import _   # noqa
 from nova.openstack.common import log as logging
@@ -25,10 +24,11 @@ CONF = cfg.CONF
 
 log = logging.getLogger(__name__)
 
+
 def get_memory_info(meminfo="/proc/meminfo", unit='mB'):
     # read a /proc/meminfo style file and return
     # a dict with 'total', 'free', and 'used'
-    mpliers = {'kB': 2**10, 'mB': 2 ** 20, 'B': 1, 'gB': 2 ** 30}
+    mpliers = {'kB': 2 ** 10, 'mB': 2 ** 20, 'B': 1, 'gB': 2 ** 30}
     data = {}
     with open(meminfo, "r") as fp:
         for line in fp:
@@ -49,6 +49,7 @@ def get_memory_info(meminfo="/proc/meminfo", unit='mB'):
             'free': free / mpliers[unit],
             'used': (data['MemTotal'] - free) / mpliers[unit]}
 
+
 def get_disk_info():
     st = os.statvfs(CONF.instances_path)
     return {
@@ -56,6 +57,7 @@ def get_disk_info():
         'available': st.f_bavail * st.f_frsize,
         'used': (st.f_blocks - st.f_bfree) * st.f_frsize
     }
+
 
 def get_cpu_count():
     return multiprocessing.cpu_count()

@@ -25,7 +25,6 @@ example:
 
 import os
 import argparse
-import sys
 import tempfile
 
 from nova.openstack.common import lockutils
@@ -34,6 +33,7 @@ ETC_LXC_USERNET = "/etc/lxc/lxc-usernet"
 
 
 class UserNetLine(object):
+
     def __init__(self, line):
         self.error = None
         line = line.rstrip("\n")
@@ -185,7 +185,14 @@ def manage_main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--type", "-t", help="nic type (default: 'veth')",
                         default="veth", dest="ntype")
-    parser.add_argument('operation', choices=("set", "inc", "dec", "del", "get"))
+    parser.add_argument(
+        'operation',
+        choices=(
+            "set",
+            "inc",
+            "dec",
+            "del",
+            "get"))
     parser.add_argument('user', help="username")
     parser.add_argument('bridge', help="bridge")
     parser.add_argument('count', nargs="?", help="number to operate with.",
@@ -208,7 +215,5 @@ def manage_main():
         return 0
 
     with lockutils.lock(str(fname)):
-        if not os.path.exists(fname):
-            fp.write("# USERNAME TYPE BRIDGE COUNT\n")
         update_usernet(user=args.user, bridge=args.bridge, op=args.operation,
                        count=args.count, ntype=args.ntype, fname=fname)

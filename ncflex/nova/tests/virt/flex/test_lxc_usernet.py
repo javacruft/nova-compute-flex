@@ -1,4 +1,4 @@
-from ncflex.nova.virt.flex.lxc_usernet import (lfilter, load_usernet,
+from ncflex.nova.virt.flex.lxc_usernet import (lfilter,
                                                update_usernet, UserNetLine)
 
 import tempfile
@@ -7,6 +7,7 @@ from unittest import TestCase
 
 
 class TestLines(TestCase):
+
     def test_basic_line(self):
         f = UserNetLine("ubuntu veth br100 128")
         self.assertTrue(all([f.user == "ubuntu", f.ntype == "veth",
@@ -21,6 +22,7 @@ class TestLines(TestCase):
 
 
 class TestOps(TestCase):
+
     def tearDown(self):
         if self.tmpf and os.path.exists(self.tmpf):
             os.unlink(self.tmpf)

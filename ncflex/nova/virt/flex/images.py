@@ -1,3 +1,17 @@
+# Copyright (c) 2014 Canonical Ltd
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
 import os
 import tarfile
 
@@ -5,7 +19,6 @@ from oslo.config import cfg
 
 from . import utils as container_utils
 from nova import exception
-from nova.compute import flavors
 from nova.openstack.common import fileutils
 from nova.openstack.common import log as logging
 from nova.openstack.common.gettextutils import _
@@ -16,14 +29,24 @@ CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 
-def create_container(context, instance, image_meta, container_image, idmap, flavor):
+
+def create_container(
+        context, instance, image_meta, container_image, idmap, flavor):
     try:
-        _fetch_image(context, instance, image_meta, container_image, idmap, flavor)
-        _setup_container(instance, container_image, idmap)
+        _fetch_image(
+            context,
+            instance,
+            image_meta,
+            container_image,
+            idmap,
+            flavor)
+        _setup_container(instance, image_meta, idmap)
     except Exception as ex:
         LOG.error(_('Failed: %s') % ex)
 
-def _fetch_image(context, instance, image_meta, container_image, idmap, flavor):
+
+def _fetch_image(
+        context, instance, image_meta, container_image, idmap, flavor):
     """Fetch the image from a glance image server."""
     LOG.debug("Downloading image from glance")
 
@@ -38,25 +61,29 @@ def _fetch_image(context, instance, image_meta, container_image, idmap, flavor):
                             instance['user_id'], instance['project_id'])
         if not tarfile.is_tarfile(base):
             os.unlink(base)
-            raise exeception.InvalidDiskFormat(
+            raise exception.InvalidDiskFormat(
                 disk_format=container_utils.get_disk_format(image_meta))
-        
+
     if not os.path.exists(image_dir):
         (user, group) = idmap.get_user()
         utils.execute('btrfs', 'sub', 'create', image_dir)
 
-        utils.execute('chown', '%s:%s' % (user, group), image_dir, run_as_root=True)
+        utils.execute(
+            'chown', '%s:%s' %
+            (user, group), image_dir, run_as_root=True)
 
         tar = ['tar', '--directory', image_dir,
                '--anchored', '--numeric-owner', '-xpzf', base]
-        nsexec = (['lxc-usernsexec'] + idmap.usernsexec_margs(with_read="user") +
+        nsexec = (['lxc-usernsexec'] +
+                  idmap.usernsexec_margs(with_read="user") +
                   ['--'])
-            
+
         args = tuple(nsexec + tar)
-        utils.execute(*args, check_exit_code=[0,2])
+        utils.execute(*args, check_exit_code=[0, 2])
         utils.execute(*tuple(nsexec + ['chown', '0:0', image_dir]))
 
-def _setup_container(instance, comtainer_image, idmap):
+
+def _setup_container(instance, image_meta, idmap):
     container_rootfs = container_utils.get_container_rootfs(instance)
     console_log = container_utils.get_container_console(instance)
 
@@ -72,11 +99,10 @@ def _setup_container(instance, comtainer_image, idmap):
             disk_format=container_utils.get_disk_format(image_meta))
 
     if not os.path.exists(container_rootfs):
-        flavor = flavors.extract_flavor(instance)
         if os.path.exists(image_dir):
             try:
-                utils.execute('btrfs', 'subvolume', 'snapshot', image_dir, container_rootfs,
-                              run_as_root=True)
+                utils.execute('btrfs', 'subvolume', 'snapshot', image_dir,
+                              container_rootfs, run_as_root=True)
             except:
                 utils.execute('btrfs', 'subvolume', 'delete', container_rootfs,
                               run_as_root=True)
@@ -87,12 +113,12 @@ def _setup_container(instance, comtainer_image, idmap):
         lxc_type = container_utils.get_lxc_security_info(instance)
         if lxc_type == 'privileged':
             utils.execute('chown', '-R', 'root:root', container_rootfs,
-                           run_as_root=True)
+                          run_as_root=True)
 
         # setup the user quotas
         size = instance['root_gb']
         if size != 0:
             utils.execute('btrfs', 'quota', 'enable', container_rootfs,
                           run_as_root=True)
-            utils.execute('btrfs', 'qgroup', 'limit', '%sG' % size, container_rootfs,
-                          run_as_root=True)
+            utils.execute('btrfs', 'qgroup', 'limit', '%sG' % size,
+                          container_rootfs, run_as_root=True)

@@ -20,11 +20,9 @@ import os
 
 
 from oslo.config import cfg
-from oslo.utils import units
 
 from nova.openstack.common.gettextutils import _  # noqa
 from nova.openstack.common import log as logging
-from nova.openstack.common import lockutils
 from nova import context as nova_context
 from nova import objects
 from nova import utils
@@ -60,6 +58,7 @@ def get_instance_path(instance):
 def get_disk_format(image_meta):
     return image_meta.get('disk_format')
 
+
 def get_lxc_security_info(instance):
     flavor = objects.Flavor.get_by_id(
         nova_context.get_admin_context(read_deleted='yes'),
@@ -73,12 +72,14 @@ def get_lxc_security_info(instance):
             return 'privileged'
     return 'unprivileged'
 
+
 def get_container_mem_info(instance, container):
     try:
         mem = int(container.get_cgroup_item('memory.usage_in_bytes'))
     except KeyError:
         return 0
     return (mem / 1024) / 1024
+
 
 def get_container_cores(instance):
     return int(instance['vcpus'] * 1024)
@@ -92,6 +93,7 @@ def write_lxc_usernet(instance, bridge, user=None, count=1):
 
 
 class LXCIdMap(object):
+
     def __init__(self, ustart, unum, gstart, gnum):
         self.ustart = int(ustart)
         self.unum = int(unum)
@@ -104,7 +106,9 @@ class LXCIdMap(object):
                 with_read = os.getuid()
             unum = self.unum - 1
             rflag = ['-m', 'u:%s:%s:1' % (self.ustart + self.unum, with_read)]
-            print("================ rflag: %s ==================" % (str(rflag)))
+            print(
+                "================ rflag: %s ==================" %
+                (str(rflag)))
         else:
             unum = self.unum
             rflag = []
@@ -121,6 +125,7 @@ class LXCIdMap(object):
 
 
 class LXCUserIdMap(LXCIdMap):
+
     def __init__(self, user=None, group=None, subuid_f="/etc/subuid",
                  subgid_f="/etc/subgid"):
         if user is None:
