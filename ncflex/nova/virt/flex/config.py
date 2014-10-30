@@ -101,18 +101,20 @@ class LXCConfig(object):
                         container_utils.get_container_logfile(self.instance))
 
     def config_lxc_network(self):
-        for vif in self.network_info:
-            vif_id = vif['id'][:11]
-            vif_type = vif['type']
-            bridge = vif['network']['bridge']
-            mac = vif['address']
+        if self.network_info:
+            # NOTE(jamespage) this does not deal with multiple nics.
+            for vif in self.network_info:
+                vif_id = vif['id'][:11]
+                vif_type = vif['type']
+                bridge = vif['network']['bridge']
+                mac = vif['address']
 
-        if vif_type == 'ovs':
-            bridge = 'qbr%s' % vif_id
+            if vif_type == 'ovs':
+                bridge = 'qbr%s' % vif_id
 
-        self.container.append_config_item('lxc.network.type', 'veth')
-        self.container.append_config_item('lxc.network.hwaddr', mac)
-        self.container.append_config_item('lxc.network.link', bridge)
+            self.container.append_config_item('lxc.network.type', 'veth')
+            self.container.append_config_item('lxc.network.hwaddr', mac)
+            self.container.append_config_item('lxc.network.link', bridge)
 
     def config_lxc_console(self):
         self.container.append_config_item('lxc.console.logfile',
